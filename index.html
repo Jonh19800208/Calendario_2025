@@ -14,9 +14,9 @@
 
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.5;
-    max-width: 1400px;
+    max-width: 800px;
     margin: 0 auto;
     padding: 20px;
     background-color: #E6F3FF;
@@ -48,33 +48,19 @@
   .day {
     border: 1px solid black;
     padding: 10px;
-    min-height: 100px;
+    min-height: 60px;
     position: relative;
     background-color: white;
     font-size: 0.9rem;
   }
 
-  .day.festivo {
-    background-color: var(--festivo);
-  }
 
-  .day.especial {
-    background-color: var(--especial);
-  }
-
-  .day.nuevo-especial {
-    background-color: var(--nuevo-especial);
-  }
-
-  .day.october-17 {
-    background-color: var(--october-17);
-  }
 
   .day-header {
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     font-size: 1.1rem;
-    padding: 5px;
+    padding: 2px;
   }
 
   .controls {
@@ -130,7 +116,7 @@
   }
 
   .turno-select {
-    width: 100%;
+    width: 80%;
     padding: 8px;
     margin-top: 5px;
     background-color: white;
@@ -148,9 +134,9 @@
   .turno-select option[value="F"] { background-color: var(--festivo); }
 
   .day-content {
-    padding: 5px;
+    padding: 2px;
     border-radius: 3px;
-    margin-top: 5px;
+    margin-top: 2px;
   }
 
   .turno-m { background-color: var(--turno-m); }
@@ -243,7 +229,7 @@
     </div>
     <div class="legend-item">
       <div class="legend-color" style="background-color: var(--turno-a)"></div>
-      <span>Adelanto</span>
+      <span>Adelanto turno</span>
     </div>
     <div class="legend-item">
       <div class="legend-color" style="background-color: var(--turno-v)"></div>
@@ -263,7 +249,7 @@
     <div class="summary-item turno-m" id="count-m">Ma&#xf1;anas: 0</div>
     <div class="summary-item turno-t" id="count-t">Tardes: 0</div>
     <div class="summary-item turno-n" id="count-n">Noches: 0</div>
-    <div class="summary-item turno-a" id="count-a">Adelantos: 0</div>
+    <div class="summary-item turno-a" id="count-a">Adelantos Turno: 0</div>
     <div class="summary-item turno-v" id="count-v">Vacaciones: 0</div>
     <div class="summary-item" id="count-total">Total: 0</div>
   </div>
@@ -276,7 +262,7 @@
     <div class="summary-item turno-m" id="annual-m">Ma&#xf1;anas: 0</div>
     <div class="summary-item turno-t" id="annual-t">Tardes: 0</div>
     <div class="summary-item turno-n" id="annual-n">Noches: 0</div>
-    <div class="summary-item turno-a" id="annual-a">Adelantos: 0</div>
+    <div class="summary-item turno-a" id="annual-a">Adelantos Turno: 0</div>
     <div class="summary-item turno-v" id="annual-v">Vacaciones: 0</div>
     <div class="summary-item" id="annual-total">Total d&#xed;as trabajados: 0</div>
   </div>
