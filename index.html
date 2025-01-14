@@ -10,27 +10,19 @@
     
   }
 
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-    max-width: 1000px;
-    margin: 0 auto;
+body {
+    position: relative;
+    font-family: sans-serif;
+    font-size: 19px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 65%);
+    min-height: 100vh;
+    margin: 0;
     padding: 20px;
-    background-color: #E6F3FF;
-  }
-
-  body::before {
-    content: "CC.OO";
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    font-size: 15vw;
-    color: rgba(0, 0, 0, 0.1);
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: -1;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
   }
 
   .calendar {
