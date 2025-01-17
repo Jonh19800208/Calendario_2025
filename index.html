@@ -9,6 +9,7 @@
     --especial: #DDA0DD;
     --nuevo-especial: #98FB98;
     --october-17: #F0E68C;
+    --turno-fl: #FFA07A;
   }
 
   body {
@@ -18,7 +19,7 @@
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #FF6961;
+    background-color: #ff6961;
   }
 
   body::before {
@@ -99,14 +100,16 @@
     padding: 3px 5px;
     font-size: 0.8rem;
     border-radius: 4px;
-    border: 1px solid #ccc;
+    border: 1px solid red;
     background: white;
     cursor: pointer;
     transition: all 0.2s;
+    color: red;
   }
 
   .month-nav button:hover {
-    background: #f0f0f0;
+    background: #ffe6e6;
+    color: darkred;
   }
 
   .legend {
@@ -152,6 +155,7 @@
   .turno-select option[value="A"] { background-color: var(--turno-a); }
   .turno-select option[value="V"] { background-color: var(--turno-v); }
   .turno-select option[value="F"] { background-color: var(--festivo); }
+  .turno-select option[value="FL"] { background-color: var(--turno-fl); }
 
   .day-content {
     padding: 1px;
@@ -165,6 +169,7 @@
   .turno-a { background-color: var(--turno-a); }
   .turno-v { background-color: var(--turno-v); }
   .turno-f { background-color: var(--festivo); }
+  .turno-fl { background-color: var(--turno-fl); }
 
   .summary {
     background-color: white;
@@ -264,6 +269,10 @@
       <div class="legend-color" style="background-color: var(--festivo)"></div>
       <span>Festivo</span>
     </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: var(--turno-fl)"></div>
+      <span>Flexibilidad</span>
+    </div>
   </div>
 </div>
 
@@ -276,6 +285,7 @@
     <div class="summary-item turno-n" id="count-n">Noches: 0</div>
     <div class="summary-item turno-a" id="count-a">Adelantos: 0</div>
     <div class="summary-item turno-v" id="count-v">Vacaciones: 0</div>
+    <div class="summary-item turno-fl" id="count-fl">Flexibilidad: 0</div>
     <div class="summary-item" id="count-total">Total: 0</div>
   </div>
   <div id="workDaysInfo" class="work-days-info"></div>
@@ -289,6 +299,7 @@
     <div class="summary-item turno-n" id="annual-n">Noches: 0</div>
     <div class="summary-item turno-a" id="annual-a">Adelantos: 0</div>
     <div class="summary-item turno-v" id="annual-v">Vacaciones: 0</div>
+    <div class="summary-item turno-fl" id="annual-fl">Flexibilidad: 0</div>
     <div class="summary-item" id="annual-total">Total d&#xed;as trabajados: 0</div>
   </div>
 </div>
@@ -305,7 +316,8 @@ const turnosText = {
   'N': 'Noche',
   'A': 'Adelanto',
   'V': 'Vacaciones',
-  'F': 'Festivo'
+  'F': 'Festivo',
+  'FL': 'Flexibilidad'
 };
 const diasSemana = ['Dom.', 'Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sab.'];
 const monthlyWorkDays = {
@@ -362,7 +374,8 @@ function updateSummary() {
     'T': 0,
     'N': 0,
     'A': 0,
-    'V': 0
+    'V': 0,
+    'FL': 0
   };
   for (let day = 1; day <= 31; day++) {
     const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -376,6 +389,7 @@ function updateSummary() {
   document.getElementById('count-n').textContent = `Noches: ${counts['N']}`;
   document.getElementById('count-a').textContent = `Adelantos: ${counts['A']}`;
   document.getElementById('count-v').textContent = `Vacaciones: ${counts['V']}`;
+  document.getElementById('count-fl').textContent = `Flexibilidad: ${counts['FL']}`;
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
   document.getElementById('count-total').textContent = `Total: ${total}`;
   const annualSummary = document.getElementById('annual-summary');
@@ -390,7 +404,8 @@ function calculateAnnualSummary() {
     'T': 0,
     'N': 0,
     'A': 0,
-    'V': 0
+    'V': 0,
+    'FL': 0
   };
   for (let month = 0; month < 12; month++) {
     for (let day = 1; day <= 31; day++) {
@@ -406,6 +421,7 @@ function calculateAnnualSummary() {
   document.getElementById('annual-n').textContent = `Noches: ${counts['N']}`;
   document.getElementById('annual-a').textContent = `Adelantos: ${counts['A']}`;
   document.getElementById('annual-v').textContent = `Vacaciones: ${counts['V']}`;
+  document.getElementById('annual-fl').textContent = `Flexibilidad: ${counts['FL']}`;
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
   document.getElementById('annual-total').textContent = `Total días trabajados: ${total}`;
 }
@@ -458,6 +474,7 @@ function renderCalendar() {
           <option value="A" ${savedTurno === 'A' ? 'selected' : ''}>Adelanto</option>
           <option value="V" ${savedTurno === 'V' ? 'selected' : ''}>Vacaciones</option>
           <option value="F" ${savedTurno === 'F' ? 'selected' : ''}>Festivo</option>
+          <option value="FL" ${savedTurno === 'FL' ? 'selected' : ''}>Flexibilidad</option>
         </select>
       </div>
     `;
@@ -480,7 +497,8 @@ function getTurnoColor(turno) {
     'N': 'var(--turno-n)',
     'A': 'var(--turno-a)',
     'V': 'var(--turno-v)',
-    'F': 'var(--festivo)'
+    'F': 'var(--festivo)',
+    'FL': 'var(--turno-fl)'
   };
   return colors[turno] || 'white';
 }
