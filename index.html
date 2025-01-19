@@ -4,12 +4,13 @@
     --turno-t: #98FB98;
     --turno-n: #87CEEB;
     --turno-a: #DDA0DD;
-    --turno-v: #F0E68C;
+    --turno-v: #F0E68C; 
     --festivo: #FF6B6B;
     --especial: #DDA0DD;
-    --nuevo-especial: #98FB98;
-    --october-17: #F0E68C;
+    --nuevo-especial: #2ecc71;
+    --october-17: #DAA520;
     --turno-fl: #FFA07A;
+    --festivo-convenio: #D3D3D3;
   }
 
   body {
@@ -61,7 +62,7 @@
   }
 
   .day.especial {
-    background-color: var(--especial);
+    background-color: var(--festivo-convenio);
   }
 
   .day.nuevo-especial {
@@ -273,6 +274,18 @@
       <div class="legend-color" style="background-color: var(--turno-fl)"></div>
       <span>Flexibilidad</span>
     </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: var(--october-17)"></div>
+      <span>Patrona</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: var(--festivo-convenio)"></div>
+      <span>Festivo Convenio</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #2ecc71"></div>
+      <span>Festivos Locales</span>
+    </div>
   </div>
 </div>
 
@@ -455,6 +468,11 @@ function renderCalendar() {
     }
     if (diasEspeciales.includes(fecha)) {
       dayEl.classList.add('especial');
+      const festivoText = document.createElement('div');
+      festivoText.style.fontSize = '0.6rem';
+      festivoText.style.fontWeight = 'bold';
+      festivoText.textContent = 'Festivo Convenio';
+      dayEl.appendChild(festivoText);
     }
     if (diasNuevoEspeciales.includes(fecha)) {
       dayEl.classList.add('nuevo-especial');
@@ -463,6 +481,13 @@ function renderCalendar() {
       dayEl.classList.add('october-17');
     }
     const savedTurno = localStorage.getItem(fecha) || '';
+    if (diasOctubre17.includes(fecha) && month === 9) {
+      const patronaText = document.createElement('div');
+      patronaText.style.fontSize = '0.6rem';
+      patronaText.style.fontWeight = 'bold';
+      patronaText.textContent = 'Patrona';
+      dayEl.appendChild(patronaText);
+    }
     dayEl.innerHTML = `
       <div class="day-header">${day}</div>
       <div class="day-content ${savedTurno ? 'turno-' + savedTurno.toLowerCase() : ''}">
