@@ -57,6 +57,11 @@
     font-size: 0.75rem;
   }
 
+  .day:nth-child(7n),  /* Sunday */
+  .day:nth-child(7n-1) /* Saturday */ {
+    background-color: #8f8f8f;
+  }
+
   .day.festivo {
     background-color: var(--festivo);
   }
@@ -332,7 +337,7 @@ const turnosText = {
   'F': 'Festivo',
   'FL': 'Flexibilidad'
 };
-const diasSemana = ['Dom.', 'Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sab.'];
+const diasSemana = ['Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sab.', 'Dom.'];
 const monthlyWorkDays = {
   0: {
     days: 21,
@@ -460,12 +465,20 @@ function renderCalendar() {
     header.textContent = dia;
     calendar.appendChild(header);
   });
-  for (let i = 0; i < firstDay.getDay(); i++) {
+  const mondayBasedDay = (firstDay.getDay() + 6) % 7;
+  for (let i = 0; i < mondayBasedDay; i++) {
     calendar.appendChild(document.createElement('div'));
   }
   for (let day = 1; day <= lastDay.getDate(); day++) {
+    const date = new Date(year, month, day);
     const dayEl = document.createElement('div');
     dayEl.className = 'day';
+    const mondayBasedDayOfWeek = (date.getDay() + 6) % 7;
+    if (mondayBasedDayOfWeek === 5 || mondayBasedDayOfWeek === 6) {
+      dayEl.classList.add('weekend');
+    } else {
+      dayEl.classList.add('weekday');
+    }
     const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     if (festivos2025.includes(fecha)) {
       dayEl.classList.add('festivo');
