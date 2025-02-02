@@ -17,6 +17,7 @@
       --festivo-convenio: #D3D3D3;
       --turno-b: #4682B4; 
       --turno-pnr: #FF1493; 
+      --turno-lpf: #40E0D0; 
     }
 
     body {
@@ -170,6 +171,7 @@
     .turno-select option[value="FL"] { background-color: var(--turno-fl); }
     .turno-select option[value="B"] { background-color: var(--turno-b); color: white; }
     .turno-select option[value="PNR"] { background-color: var(--turno-pnr); color: white; }
+    .turno-select option[value="LPF"] { background-color: var(--turno-lpf); }
 
     .day-content {
       padding: 1px;
@@ -186,6 +188,7 @@
     .turno-fl { background-color: var(--turno-fl); }
     .turno-b { background-color: var(--turno-b); color: white; }
     .turno-pnr { background-color: var(--turno-pnr); color: white; }
+    .turno-lpf { background-color: var(--turno-lpf); }
 
     .summary {
       background-color: white;
@@ -215,6 +218,10 @@
       padding: 2px;
       font-size: 0.7rem;
       font-weight: 500;
+    }
+
+    .vacation-count {
+      background-color: #F0E68C !important;  /* Light khaki yellow */
     }
 
     .annual-summary {
@@ -309,6 +316,10 @@
         <div class="legend-color" style="background-color: var(--turno-pnr)"></div>
         <span>Permiso no retribuido</span>
       </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: var(--turno-lpf)"></div>
+        <span>Libres por festivo</span>
+      </div>
     </div>
   </div>
 
@@ -323,6 +334,9 @@
       <div class="summary-item turno-v" id="count-v">Vacaciones: 0</div>
       <div class="summary-item turno-fl" id="count-fl">Flexibilidad: 0</div>
       <div class="summary-item" id="count-total">Total: 0</div>
+      <div class="summary-item vacation-count" id="vacation-days">Días de vacaciones restantes: 22</div>
+      <div class="summary-item" id="weekend-days" style="background-color: #8f8f8f">Días trabajados en fin de semana: 0</div>
+      <div class="summary-item turno-b" id="count-b">Días de baja: 0</div>
     </div>
     <div id="workDaysInfo" class="work-days-info"></div>
   </div>
@@ -337,6 +351,9 @@
       <div class="summary-item turno-v" id="annual-v">Vacaciones: 0</div>
       <div class="summary-item turno-fl" id="annual-fl">Flexibilidad: 0</div>
       <div class="summary-item" id="annual-total">Total días trabajados: 0</div>
+      <div class="summary-item vacation-count" id="annual-vacation-days">Total días vacaciones usados: 0</div>
+      <div class="summary-item" id="annual-weekend-days" style="background-color: #8f8f8f">Total días trabajados en fin de semana: 0</div>
+      <div class="summary-item turno-b" id="annual-b">Total días de baja: 0</div>
     </div>
   </div>
 
@@ -356,7 +373,8 @@
       'F': 'Festivo',
       'FL': 'Flexibilidad',
       'B': 'Baja',
-      'PNR': 'Permiso no retribuido'
+      'PNR': 'Permiso no retribuido',
+      'LPF': 'Libres por festivo'
     };
     const diasSemana = ['Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sab.', 'Dom.'];
     const monthlyWorkDays = {
@@ -421,25 +439,57 @@
         'V': 0,
         'FL': 0,
         'B': 0,
-        'PNR': 0
+        'PNR': 0,
+        'LPF': 0
       };
+      
+      let weekendDays = 0;
+      
       for (let day = 1; day <= 31; day++) {
-        const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const turno = localStorage.getItem(fecha);
-        if (turno && counts.hasOwnProperty(turno)) {
-          counts[turno]++;
+        const date = new Date(year, month, day);
+        if (date.getMonth() === month) {
+          const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const turno = localStorage.getItem(fecha);
+          
+          const isWeekend = [0, 6].includes(date.getDay());
+          if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF') {
+            weekendDays++;
+          }
+          
+          if (turno && counts.hasOwnProperty(turno)) {
+            counts[turno]++;
+          }
         }
       }
+      
       document.getElementById('count-m').textContent = `Mañanas: ${counts['M']}`;
       document.getElementById('count-t').textContent = `Tardes: ${counts['T']}`;
       document.getElementById('count-n').textContent = `Noches: ${counts['N']}`;
       document.getElementById('count-a').textContent = `Adelantos: ${counts['A']}`;
       document.getElementById('count-v').textContent = `Vacaciones: ${counts['V']}`;
       document.getElementById('count-fl').textContent = `Flexibilidad: ${counts['FL']}`;
+      document.getElementById('count-b').textContent = `Días de baja: ${counts['B']}`;
+      document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays}`;
+      
       const total = Object.entries(counts).reduce((sum, [key, count]) => {
-        return (key !== 'B' && key !== 'PNR') ? sum + count : sum;
+        return (key !== 'B' && key !== 'LPF') ? sum + count : sum;
       }, 0);
+      
       document.getElementById('count-total').textContent = `Total: ${total}`;
+      
+      let totalVacationDaysUsed = 0;
+      for (let m = 0; m <= month; m++) {
+        for (let day = 1; day <= 31; day++) {
+          const fecha = `${year}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const turno = localStorage.getItem(fecha);
+          if (turno === 'V') {
+            totalVacationDaysUsed++;
+          }
+        }
+      }
+      const remainingVacationDays = 22 - totalVacationDaysUsed;
+      document.getElementById('vacation-days').textContent = `Días de vacaciones restantes: ${remainingVacationDays}`;
+
       const annualSummary = document.getElementById('annual-summary');
       annualSummary.classList.toggle('visible', month === 11);
       if (month === 11) {
@@ -456,27 +506,46 @@
         'V': 0,
         'FL': 0,
         'B': 0,
-        'PNR': 0
+        'PNR': 0,
+        'LPF': 0
       };
+      
+      let totalWeekendDays = 0;
+      
       for (let month = 0; month < 12; month++) {
         for (let day = 1; day <= 31; day++) {
-          const fecha = `2025-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          const turno = localStorage.getItem(fecha);
-          if (turno && counts.hasOwnProperty(turno)) {
-            counts[turno]++;
+          const date = new Date(2025, month, day);
+          if (date.getMonth() === month) {
+            const fecha = `2025-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const turno = localStorage.getItem(fecha);
+            
+            const isWeekend = [0, 6].includes(date.getDay());
+            if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF') {
+              totalWeekendDays++;
+            }
+            
+            if (turno && counts.hasOwnProperty(turno)) {
+              counts[turno]++;
+            }
           }
         }
       }
+      
       document.getElementById('annual-m').textContent = `Mañanas: ${counts['M']}`;
       document.getElementById('annual-t').textContent = `Tardes: ${counts['T']}`;
       document.getElementById('annual-n').textContent = `Noches: ${counts['N']}`;
       document.getElementById('annual-a').textContent = `Adelantos: ${counts['A']}`;
       document.getElementById('annual-v').textContent = `Vacaciones: ${counts['V']}`;
       document.getElementById('annual-fl').textContent = `Flexibilidad: ${counts['FL']}`;
+      document.getElementById('annual-b').textContent = `Total días de baja: ${counts['B']}`;
+      document.getElementById('annual-weekend-days').textContent = `Total días trabajados en fin de semana: ${totalWeekendDays}`;
+      
       const total = Object.entries(counts).reduce((sum, [key, count]) => {
-        return (key !== 'B' && key !== 'PNR') ? sum + count : sum;
+        return (key !== 'B' && key !== 'LPF') ? sum + count : sum;
       }, 0);
+      
       document.getElementById('annual-total').textContent = `Total días trabajados: ${total}`;
+      document.getElementById('annual-vacation-days').textContent = `Total días vacaciones usados: ${counts['V']}`;
     }
 
     function getTurnoColor(turno) {
@@ -490,7 +559,8 @@
         'F': 'var(--festivo)',
         'FL': 'var(--turno-fl)',
         'B': 'var(--turno-b)',
-        'PNR': 'var(--turno-pnr)'
+        'PNR': 'var(--turno-pnr)',
+        'LPF': 'var(--turno-lpf)'
       };
       return colors[turno] || 'white';
     }
@@ -567,6 +637,7 @@
               <option value="FL" ${savedTurno === 'FL' ? 'selected' : ''}>Flexibilidad</option>
               <option value="B" ${savedTurno === 'B' ? 'selected' : ''}>Baja</option>
               <option value="PNR" ${savedTurno === 'PNR' ? 'selected' : ''}>Permiso no retribuido</option>
+              <option value="LPF" ${savedTurno === 'LPF' ? 'selected' : ''}>Libres por festivo</option>
             </select>
           </div>
         `;
