@@ -18,6 +18,7 @@
       --turno-b: #4682B4; 
       --turno-pnr: #FF1493; 
       --turno-lpf: #40E0D0; 
+      --turno-vaa: #9370DB;
     }
 
     body {
@@ -172,6 +173,7 @@
     .turno-select option[value="B"] { background-color: var(--turno-b); color: white; }
     .turno-select option[value="PNR"] { background-color: var(--turno-pnr); color: white; }
     .turno-select option[value="LPF"] { background-color: var(--turno-lpf); }
+    .turno-select option[value="VAA"] { background-color: var(--turno-vaa); }
 
     .day-content {
       padding: 1px;
@@ -189,6 +191,7 @@
     .turno-b { background-color: var(--turno-b); color: white; }
     .turno-pnr { background-color: var(--turno-pnr); color: white; }
     .turno-lpf { background-color: var(--turno-lpf); }
+    .turno-vaa { background-color: var(--turno-vaa); }
 
     .summary {
       background-color: white;
@@ -253,6 +256,44 @@
       font-size: 1.2rem;
       font-weight: 600;
       margin: 0.5rem 0;
+    }
+
+    .save-button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+
+    .save-button:hover {
+      background-color: #45a049;
+    }
+
+    .save-status {
+      color: #4CAF50;
+      font-size: 0.8rem;
+      margin-left: 10px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .save-status.visible {
+      opacity: 1;
+    }
+
+    .controls-buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 5px;
     }
   </style>
 
@@ -320,6 +361,14 @@
         <div class="legend-color" style="background-color: var(--turno-lpf)"></div>
         <span>Libres por festivo</span>
       </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: var(--turno-vaa)"></div>
+        <span>Vacaciones año anterior</span>
+      </div>
+    </div>
+    <div class="controls-buttons">
+      <button class="save-button" onclick="saveCalendarData()">Guardar</button>
+      <span id="saveStatus" class="save-status">✓ Guardado correctamente</span>
     </div>
   </div>
 
@@ -337,6 +386,7 @@
       <div class="summary-item vacation-count" id="vacation-days">Días de vacaciones restantes: 22</div>
       <div class="summary-item" id="weekend-days" style="background-color: #8f8f8f">Días trabajados en fin de semana: 0</div>
       <div class="summary-item turno-b" id="count-b">Días de baja: 0</div>
+      <div class="summary-item turno-vaa" id="count-vaa">Vacaciones año anterior: 0</div>
     </div>
     <div id="workDaysInfo" class="work-days-info"></div>
   </div>
@@ -374,7 +424,8 @@
       'FL': 'Flexibilidad',
       'B': 'Baja',
       'PNR': 'Permiso no retribuido',
-      'LPF': 'Libres por festivo'
+      'LPF': 'Libres por festivo',
+      'VAA': 'Vacaciones año anterior'
     };
     const diasSemana = ['Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sab.', 'Dom.'];
     const monthlyWorkDays = {
@@ -440,7 +491,8 @@
         'FL': 0,
         'B': 0,
         'PNR': 0,
-        'LPF': 0
+        'LPF': 0,
+        'VAA': 0
       };
       
       let weekendDays = 0;
@@ -469,6 +521,7 @@
       document.getElementById('count-v').textContent = `Vacaciones: ${counts['V']}`;
       document.getElementById('count-fl').textContent = `Flexibilidad: ${counts['FL']}`;
       document.getElementById('count-b').textContent = `Días de baja: ${counts['B']}`;
+      document.getElementById('count-vaa').textContent = `Vacaciones año anterior: ${counts['VAA']}`;
       document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays}`;
       
       const total = Object.entries(counts).reduce((sum, [key, count]) => {
@@ -560,7 +613,8 @@
         'FL': 'var(--turno-fl)',
         'B': 'var(--turno-b)',
         'PNR': 'var(--turno-pnr)',
-        'LPF': 'var(--turno-lpf)'
+        'LPF': 'var(--turno-lpf)',
+        'VAA': 'var(--turno-vaa)'
       };
       return colors[turno] || 'white';
     }
@@ -633,6 +687,7 @@
               <option value="N" ${savedTurno === 'N' ? 'selected' : ''}>Noche</option>
               <option value="A" ${savedTurno === 'A' ? 'selected' : ''}>Adelanto</option>
               <option value="V" ${savedTurno === 'V' ? 'selected' : ''}>Vacaciones</option>
+              <option value="VAA" ${savedTurno === 'VAA' ? 'selected' : ''}>Vacaciones año anterior</option>
               <option value="F" ${savedTurno === 'F' ? 'selected' : ''}>Festivo</option>
               <option value="FL" ${savedTurno === 'FL' ? 'selected' : ''}>Flexibilidad</option>
               <option value="B" ${savedTurno === 'B' ? 'selected' : ''}>Baja</option>
@@ -675,6 +730,47 @@
       renderCalendar();
     }
 
+    function saveCalendarData() {
+      const calendarData = {};
+      
+      // Collect all data from localStorage related to calendar
+      for (let month = 0; month < 12; month++) {
+        for (let day = 1; day <= 31; day++) {
+          const date = new Date(2025, month, day);
+          if (date.getMonth() === month) { // Valid date check
+            const fecha = `2025-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const turno = localStorage.getItem(fecha);
+            if (turno) {
+              calendarData[fecha] = turno;
+            }
+          }
+        }
+      }
+
+      // Save to localStorage as JSON
+      localStorage.setItem('calendarData2025', JSON.stringify(calendarData));
+      
+      // Show save confirmation
+      const saveStatus = document.getElementById('saveStatus');
+      saveStatus.classList.add('visible');
+      setTimeout(() => {
+        saveStatus.classList.remove('visible');
+      }, 2000);
+    }
+
+    function loadCalendarData() {
+      const savedData = localStorage.getItem('calendarData2025');
+      if (savedData) {
+        const calendarData = JSON.parse(savedData);
+        // Restore saved data to localStorage
+        Object.entries(calendarData).forEach(([fecha, turno]) => {
+          localStorage.setItem(fecha, turno);
+        });
+      }
+    }
+
+    // Load saved data when page loads
+    loadCalendarData();
     renderCalendar();
   </script>
 
