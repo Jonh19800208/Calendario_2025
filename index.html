@@ -19,6 +19,7 @@
       --turno-pnr: #FF1493; 
       --turno-lpf: #40E0D0; 
       --turno-vaa: #9370DB;
+      --turno-df: #FF7F50; /* New color for Descanso flexibilidad */
     }
 
     body {
@@ -174,13 +175,8 @@
     .turno-select option[value="PNR"] { background-color: var(--turno-pnr); color: white; }
     .turno-select option[value="LPF"] { background-color: var(--turno-lpf); }
     .turno-select option[value="VAA"] { background-color: var(--turno-vaa); }
-
-    .day-content {
-      padding: 1px;
-      border-radius: 2px;
-      margin-top: 1px;
-    }
-
+    .turno-select option[value="DF"] { background-color: var(--turno-df); }
+    
     .turno-m { background-color: var(--turno-m); }
     .turno-t { background-color: var(--turno-t); }
     .turno-n { background-color: var(--turno-n); }
@@ -192,6 +188,7 @@
     .turno-pnr { background-color: var(--turno-pnr); color: white; }
     .turno-lpf { background-color: var(--turno-lpf); }
     .turno-vaa { background-color: var(--turno-vaa); }
+    .turno-df { background-color: var(--turno-df); }
 
     .summary {
       background-color: white;
@@ -256,44 +253,6 @@
       font-size: 1.2rem;
       font-weight: 600;
       margin: 0.5rem 0;
-    }
-
-    .save-button {
-      background-color: #4CAF50;
-      border: none;
-      color: white;
-      padding: 8px 16px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 14px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background-color 0.3s;
-    }
-
-    .save-button:hover {
-      background-color: #45a049;
-    }
-
-    .save-status {
-      color: #4CAF50;
-      font-size: 0.8rem;
-      margin-left: 10px;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .save-status.visible {
-      opacity: 1;
-    }
-
-    .controls-buttons {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 5px;
     }
   </style>
 
@@ -365,10 +324,10 @@
         <div class="legend-color" style="background-color: var(--turno-vaa)"></div>
         <span>Vacaciones año anterior</span>
       </div>
-    </div>
-    <div class="controls-buttons">
-      <button class="save-button" onclick="saveCalendarData()">Guardar</button>
-      <span id="saveStatus" class="save-status">✓ Guardado correctamente</span>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: var(--turno-df)"></div>
+        <span>Descanso flexibilidad</span>
+      </div>
     </div>
   </div>
 
@@ -425,7 +384,8 @@
       'B': 'Baja',
       'PNR': 'Permiso no retribuido',
       'LPF': 'Libres por festivo',
-      'VAA': 'Vacaciones año anterior'
+      'VAA': 'Vacaciones año anterior',
+      'DF': 'Descanso flexibilidad'
     };
     const diasSemana = ['Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sab.', 'Dom.'];
     const monthlyWorkDays = {
@@ -492,7 +452,8 @@
         'B': 0,
         'PNR': 0,
         'LPF': 0,
-        'VAA': 0
+        'VAA': 0,
+        'DF': 0
       };
       
       let weekendDays = 0;
@@ -525,7 +486,7 @@
       document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays}`;
       
       const total = Object.entries(counts).reduce((sum, [key, count]) => {
-        return (key !== 'B' && key !== 'LPF') ? sum + count : sum;
+        return (key !== 'B' && key !== 'LPF' && key !== 'DF') ? sum + count : sum;
       }, 0);
       
       document.getElementById('count-total').textContent = `Total: ${total}`;
@@ -614,7 +575,8 @@
         'B': 'var(--turno-b)',
         'PNR': 'var(--turno-pnr)',
         'LPF': 'var(--turno-lpf)',
-        'VAA': 'var(--turno-vaa)'
+        'VAA': 'var(--turno-vaa)',
+        'DF': 'var(--turno-df)'
       };
       return colors[turno] || 'white';
     }
@@ -693,6 +655,7 @@
               <option value="B" ${savedTurno === 'B' ? 'selected' : ''}>Baja</option>
               <option value="PNR" ${savedTurno === 'PNR' ? 'selected' : ''}>Permiso no retribuido</option>
               <option value="LPF" ${savedTurno === 'LPF' ? 'selected' : ''}>Libres por festivo</option>
+              <option value="DF" ${savedTurno === 'DF' ? 'selected' : ''}>Descanso flexibilidad</option>
             </select>
           </div>
         `;
@@ -730,47 +693,6 @@
       renderCalendar();
     }
 
-    function saveCalendarData() {
-      const calendarData = {};
-      
-      // Collect all data from localStorage related to calendar
-      for (let month = 0; month < 12; month++) {
-        for (let day = 1; day <= 31; day++) {
-          const date = new Date(2025, month, day);
-          if (date.getMonth() === month) { // Valid date check
-            const fecha = `2025-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const turno = localStorage.getItem(fecha);
-            if (turno) {
-              calendarData[fecha] = turno;
-            }
-          }
-        }
-      }
-
-      // Save to localStorage as JSON
-      localStorage.setItem('calendarData2025', JSON.stringify(calendarData));
-      
-      // Show save confirmation
-      const saveStatus = document.getElementById('saveStatus');
-      saveStatus.classList.add('visible');
-      setTimeout(() => {
-        saveStatus.classList.remove('visible');
-      }, 2000);
-    }
-
-    function loadCalendarData() {
-      const savedData = localStorage.getItem('calendarData2025');
-      if (savedData) {
-        const calendarData = JSON.parse(savedData);
-        // Restore saved data to localStorage
-        Object.entries(calendarData).forEach(([fecha, turno]) => {
-          localStorage.setItem(fecha, turno);
-        });
-      }
-    }
-
-    // Load saved data when page loads
-    loadCalendarData();
     renderCalendar();
   </script>
 
