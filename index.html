@@ -97,7 +97,7 @@
       <div class="summary-item" id="weekend-days" style="background-color: #8f8f8f">Días trabajados en fin de semana: 0</div>
       <div class="summary-item turno-b" id="count-b">Días de baja: 0</div>
       <div class="summary-item turno-vaa" id="count-vaa">Vacaciones año anterior: 0</div>
-      <div class="summary-item turno-f" id="count-f">Festivo trabajado: 0</div>
+      <div class="summary-item turno-f" id="count-f">Festivo trab.: 0</div>
     </div>
     <div id="workDaysInfo" class="work-days-info"></div>
   </div>
@@ -115,7 +115,7 @@
       <div class="summary-item vacation-count" id="annual-vacation-days">Total días vacaciones usados: 0</div>
       <div class="summary-item" id="annual-weekend-days" style="background-color: #8f8f8f">Total días trabajados en fin de semana: 0</div>
       <div class="summary-item turno-b" id="annual-b">Total días de baja: 0</div>
-      <div class="summary-item turno-f" id="annual-f">Total festivos trabajados: 0</div>
+      <div class="summary-item turno-f" id="annual-f">Total festivos trab.: 0</div>
     </div>
   </div>
 
@@ -239,7 +239,7 @@
       document.getElementById('count-fl').textContent = `Flexibilidad: ${counts['FL']}`;
       document.getElementById('count-b').textContent = `Días de baja: ${counts['B']}`;
       document.getElementById('count-vaa').textContent = `Vacaciones año anterior: ${counts['VAA']}`;
-      document.getElementById('count-f').textContent = `Festivo trabajado: ${counts['F']}`;
+      document.getElementById('count-f').textContent = `Festivo trab.: ${counts['F']}`;
       document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays}`;
       
       const total = Object.entries(counts).reduce((sum, [key, count]) => {
@@ -310,7 +310,7 @@
       document.getElementById('annual-v').textContent = `Vacaciones: ${counts['V']}`;
       document.getElementById('annual-fl').textContent = `Flexibilidad: ${counts['FL']}`;
       document.getElementById('annual-b').textContent = `Total días de baja: ${counts['B']}`;
-      document.getElementById('annual-f').textContent = `Total festivos trabajados: ${counts['F']}`;
+      document.getElementById('annual-f').textContent = `Total festivos trab.: ${counts['F']}`;
       document.getElementById('annual-weekend-days').textContent = `Total días trabajados en fin de semana: ${totalWeekendDays}`;
       
       const total = Object.entries(counts).reduce((sum, [key, count]) => {
