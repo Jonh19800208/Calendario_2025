@@ -3,6 +3,26 @@
   <title>Calendario Laboral 2025</title>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      --turno-m: #4CAF50;  /* Green */
+      --turno-t: #03A9F4;  /* Light Blue */
+      --turno-n: #8BC34A;  /* Light Green */
+      --turno-a: #FF9800;  /* Orange */
+      --turno-v: #F44336;  /* Red */
+      --turno-b: #9E9E9E;  /* Grey */
+      --turno-fl: #2196F3;  /* Blue */
+      --turno-pnr: #4CAF50;  /* Green */
+      --turno-lpf: #4CAF50;  /* Green */
+      --turno-vaa: #F44336;  /* Red */
+      --turno-df: #2196F3;  /* Blue */
+      --turno-he: #4CAF50;  /* Green */
+      --festivo: #F44336;  /* Red */
+      --festivo-convenio: #F44336;  /* Red */
+      --october-17: #F44336;  /* Red */
+      --turno-jp: #20B2AA;  /* Light Sea Green */
+    }
+  </style>
   <div class="controls">
     <div class="month-nav">
       <button onclick="prevMonth()">Anterior</button>
@@ -79,6 +99,10 @@
         <div class="legend-color" style="background-color: var(--turno-he)"></div>
         <span>Horas Extras</span>
       </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: var(--turno-jp)"></div>
+        <span>Jornada Partida</span>
+      </div>
     </div>
   </div>
 
@@ -139,7 +163,8 @@
       'LPF': 'Libres por festivo',
       'VAA': 'Vacaciones año anterior',
       'DF': 'Descanso flexibilidad',
-      'HE': 'Horas Extras'
+      'HE': 'Horas Extras',
+      'JP': 'Jornada Partida'
     };
     const diasSemana = ['Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sab.', 'Dom.'];
     const monthlyWorkDays = {
@@ -209,7 +234,8 @@
         'VAA': 0,
         'DF': 0,
         'HE': 0,
-        'F': 0
+        'F': 0,
+        'JP': 0
       };
       
       let weekendDays = 0;
@@ -279,7 +305,8 @@
         'B': 0,
         'PNR': 0,
         'LPF': 0,
-        'F': 0
+        'F': 0,
+        'JP': 0
       };
       
       let totalWeekendDays = 0;
@@ -336,7 +363,8 @@
         'LPF': 'var(--turno-lpf)',
         'VAA': 'var(--turno-vaa)',
         'DF': 'var(--turno-df)',
-        'HE': 'var(--turno-he)'
+        'HE': 'var(--turno-he)',
+        'JP': 'var(--turno-jp)'
       };
       return colors[turno] || 'white';
     }
@@ -417,6 +445,7 @@
               <option value="LPF" ${savedTurno === 'LPF' ? 'selected' : ''}>Libres por festivo</option>
               <option value="DF" ${savedTurno === 'DF' ? 'selected' : ''}>Descanso flexibilidad</option>
               <option value="HE" ${savedTurno === 'HE' ? 'selected' : ''}>Horas Extras</option>
+              <option value="JP" ${savedTurno === 'JP' ? 'selected' : ''}>Jornada Partida</option>
             </select>
           </div>
         `;

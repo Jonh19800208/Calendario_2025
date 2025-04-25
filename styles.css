@@ -16,6 +16,7 @@
   --turno-vaa: #9370DB;
   --turno-df: #FF7F50; 
   --turno-he: #8B008B; 
+  --turno-jp: #7A288A;
 }
 
 body {
@@ -24,7 +25,7 @@ body {
   line-height: 1.5;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 25px;
+  padding: 20px;
   background-color: #ff6961;
 }
 
@@ -173,6 +174,7 @@ body::before {
 .turno-select option[value="VAA"] { background-color: var(--turno-vaa); }
 .turno-select option[value="DF"] { background-color: var(--turno-df); }
 .turno-select option[value="HE"] { background-color: var(--turno-he); color: white; }
+.turno-select option[value="JP"] { background-color: var(--turno-jp); }
 
 .turno-m { background-color: var(--turno-m); }
 .turno-t { background-color: var(--turno-t); }
@@ -187,6 +189,7 @@ body::before {
 .turno-vaa { background-color: var(--turno-vaa); }
 .turno-df { background-color: var(--turno-df); }
 .turno-he { background-color: var(--turno-he); color: white; }
+.turno-jp { background-color: var(--turno-jp); }
 
 .summary {
   background-color: white;
@@ -208,7 +211,7 @@ body::before {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 2px;
 }
 
