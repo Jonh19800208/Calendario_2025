@@ -1,3 +1,5 @@
+@import url('https://fonts.cdnfonts.com/css/nexa'); /* load Nexa font */
+
 :root {
   --turno-m: #FFB6C1;
   --turno-t: #98FB98;  
@@ -20,7 +22,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Nexa', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   max-width: 1400px;
