@@ -86,6 +86,11 @@ body::before {
   background-color: var(--october-17);
 }
 
+.day.new-day {
+  background-color: white;
+  border: 1px solid black;
+}
+
 .day-header {
   font-weight: bold;
   margin-bottom: 1px;
@@ -175,7 +180,6 @@ body::before {
 .turno-select option[value="LPF"] { background-color: var(--turno-lpf); }
 .turno-select option[value="VAA"] { background-color: var(--turno-vaa); }
 .turno-select option[value="DF"] { background-color: var(--turno-df); }
-.turno-select option[value="HE"] { background-color: var(--turno-he); color: white; }
 .turno-select option[value="JP"] { background-color: var(--turno-jp); }
 
 .turno-m { background-color: var(--turno-m); }
@@ -190,7 +194,6 @@ body::before {
 .turno-lpf { background-color: var(--turno-lpf); }
 .turno-vaa { background-color: var(--turno-vaa); }
 .turno-df { background-color: var(--turno-df); }
-.turno-he { background-color: var(--turno-he); color: white; }
 .turno-jp { background-color: var(--turno-jp); }
 
 .summary {
@@ -256,4 +259,11 @@ h2 {
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0.5rem 0;
+}
+
+#count-he {
+  background-color: var(--turno-he);
+  color: white;
+  padding: 2px;
+  border-radius: 2px;
 }
