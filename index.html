@@ -96,6 +96,10 @@
         <span>Descanso flexibilidad</span>
       </div>
       <div class="legend-item">
+        <div class="legend-color" style="background-color: var(--turno-he)"></div>
+        <span>Horas Extras</span>
+      </div>
+      <div class="legend-item">
         <div class="legend-color" style="background-color: var(--turno-jp)"></div>
         <span>Jornada Partida</span>
       </div>
@@ -270,9 +274,7 @@
       document.getElementById('count-b').textContent = `Días de baja: ${counts['B']}`;
       document.getElementById('count-vaa').textContent = `Vacaciones año anterior: ${counts['VAA']}`;
       // show horas extras count and euros
-      // include stored monthly HE hours (from the extra-hours counter) plus any day-marked 'HE' entries
-      const storedHEHours = parseFloat(localStorage.getItem(`${year}-${String(month+1).padStart(2,'0')}-HE-hours`) || '0');
-      const heCount = counts['HE'] + storedHEHours;
+      const heCount = counts['HE'];
       const heEuros = (heCount * HE_HOURLY_RATE).toFixed(2);
       // create or update element if exists
       if (document.getElementById('count-he')) {
@@ -478,28 +480,12 @@
               <option value="PNR" ${savedTurno === 'PNR' ? 'selected' : ''}>Permiso no retribuido</option>
               <option value="LPF" ${savedTurno === 'LPF' ? 'selected' : ''}>Libres por festivo</option>
               <option value="DF" ${savedTurno === 'DF' ? 'selected' : ''}>Descanso flexibilidad</option>
+              <option value="HE" ${savedTurno === 'HE' ? 'selected' : ''}>Horas Extras</option>
               <option value="JP" ${savedTurno === 'JP' ? 'selected' : ''}>Jornada Partida</option>
             </select>
           </div>
         `;
         calendar.appendChild(dayEl);
-      }
-      // añadir una casilla extra después del último día del mes para "Nuevo día"
-      (function(){ 
-        const nextDate = new Date(year, month, lastDay.getDate() + 1);
-        const extraFecha = `${nextDate.getFullYear()}-${String(nextDate.getMonth()+1).padStart(2,'0')}-${String(nextDate.getDate()).padStart(2,'0')}`;
-        const extraEl = document.createElement('div');
-        extraEl.className = 'day new-day';
-        const savedExtra = localStorage.getItem(extraFecha) || '';
-        // leave the extra cell empty of header and selector per user request
-        extraEl.innerHTML = `<div class="day-header"></div><div class="day-content ${savedExtra ? 'turno-' + savedExtra.toLowerCase() : ''}"></div>`;
-        calendar.appendChild(extraEl);
-      })();
-      // append HE hours counter UI into the last day cell to be contiguous to the final day
-      const lastDayEls = calendar.querySelectorAll('.day');
-      if (lastDayEls.length) {
-        const lastDayEl = lastDayEls[lastDayEls.length - 1];
-        renderHECounter(lastDayEl, year, month);
       }
       const workInfo = monthlyWorkDays[month];
       const workDaysInfo = document.getElementById('workDaysInfo');
@@ -509,46 +495,6 @@
         workDaysInfo.textContent = '';
       }
       updateSummary();
-    }
-
-    // render small hours-extra counter UI inside a container (used on the last day cell)
-    function renderHECounter(containerEl, year, month) {
-      // avoid duplicating
-      if (containerEl.querySelector('.he-counter')) return;
-      const key = `${year}-${String(month+1).padStart(2,'0')}-HE-hours`;
-      const wrapper = document.createElement('div');
-      wrapper.className = 'he-counter';
-      wrapper.style.marginTop = '4px';
-      wrapper.style.display = 'flex';
-      wrapper.style.gap = '4px';
-      wrapper.style.alignItems = 'center';
-      wrapper.innerHTML = `
-        <button type="button" class="he-decr" aria-label="menos">−</button>
-        <div class="he-value" style="min-width:8px; text-align:center;">0.0 H
-        .extras</div>
-        <button type="button" class="he-incr" aria-label="más">+</button>
-      `;
-      containerEl.appendChild(wrapper);
-      const valueEl = wrapper.querySelector('.he-value');
-      const incr = wrapper.querySelector('.he-incr');
-      const decr = wrapper.querySelector('.he-decr');
-      function refresh() {
-        const val = parseFloat(localStorage.getItem(key) || '0');
-        valueEl.textContent = `${val.toFixed(1)} horas extras`;
-        // update summary whenever changed
-        updateSummary();
-      }
-      incr.addEventListener('click', () => {
-        const v = parseFloat(localStorage.getItem(key) || '0') + 0.5;
-        localStorage.setItem(key, v.toFixed(1));
-        refresh();
-      });
-      decr.addEventListener('click', () => {
-        const v = Math.max(0, parseFloat(localStorage.getItem(key) || '0') - 0.5);
-        localStorage.setItem(key, v.toFixed(1));
-        refresh();
-      });
-      refresh();
     }
 
     function asignarTurno(select, fecha) {
