@@ -17,7 +17,8 @@
   --turno-lpf: #40E0D0; 
   --turno-vaa: #9370DB;
   --turno-df: #FF7F50; 
-  --turno-he: #8B008B; 
+  --turno-he: #c7e7a1; 
+  --pistacho: #c7e7a1;
   --turno-jp: #7A288A;
 }
 
@@ -65,6 +66,13 @@ body::before {
   font-size: 0.75rem;
 }
 
+.day.empty {
+  background: transparent;
+  border: none;
+  min-height: 25px;
+  visibility: hidden; /* keeps layout/size but hides content */
+}
+
 .day:nth-child(7n),  /* Sunday */
 .day:nth-child(7n-1) /* Saturday */ {
   background-color: #8f8f8f;
@@ -84,6 +92,11 @@ body::before {
 
 .day.october-17 {
   background-color: var(--october-17);
+}
+
+.day.nuevo-dia {
+    background-color: #c7e7a1; /* pistacho */
+    border: 1px solid black;
 }
 
 .day-header {
@@ -177,6 +190,8 @@ body::before {
 .turno-select option[value="DF"] { background-color: var(--turno-df); }
 .turno-select option[value="HE"] { background-color: var(--turno-he); color: white; }
 .turno-select option[value="JP"] { background-color: var(--turno-jp); }
+.turno-select option[value="PD"] { background-color: #FFD700; color: black; }
+.turno-pd { background-color: #FFD700; }
 
 .turno-m { background-color: var(--turno-m); }
 .turno-t { background-color: var(--turno-t); }
@@ -190,7 +205,13 @@ body::before {
 .turno-lpf { background-color: var(--turno-lpf); }
 .turno-vaa { background-color: var(--turno-vaa); }
 .turno-df { background-color: var(--turno-df); }
-.turno-he { background-color: var(--turno-he); color: white; }
+.turno-he { 
+    background-color: var(--pistacho);
+    color: black;
+    font-weight: 600;
+    padding: 4px;
+    border-radius: 4px;
+}
 .turno-jp { background-color: var(--turno-jp); }
 
 .summary {
@@ -221,6 +242,14 @@ body::before {
   padding: 2px;
   font-size: 0.7rem;
   font-weight: 500;
+}
+
+.summary-item.turno-he, #count-he {
+    background-color: #c7e7a1;
+    color: black;
+    font-weight: 600;
+    padding: 4px;
+    border-radius: 4px;
 }
 
 .vacation-count {
@@ -257,3 +286,31 @@ h2 {
   font-weight: 600;
   margin: 0.5rem 0;
 }
+
+#count-total {
+  color: red;
+}
+
+/* H.Extras counter UI */
+.h-extras-controls {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  padding-top: 4px;
+}
+.h-extras-value {
+  min-width: 48px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.h-extras-btn {
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  border: 1px solid #bbb;
+  background: white;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.h-extras-btn:active { transform: translateY(1px); }
