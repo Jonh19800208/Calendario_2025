@@ -64,16 +64,14 @@ function updateSummary() {
       const turno = localStorage.getItem(fecha);
 
       const isWeekend = [0, 6].includes(date.getDay());
-      if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF' && turno !== 'F' && turno !== 'FL') {
+      // Contar como día trabajado en fin de semana también si es festivo trabajado (F)
+      if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF' && turno !== 'FL') {
         weekendDays++;
       }
 
       if (turno && counts.hasOwnProperty(turno)) {
-        if (turno === 'F') {
-          if (!isWeekend) counts['F']++;
-        } else {
-          counts[turno]++;
-        }
+        // Contamos festivos trabajados (F) independientemente de si caen en fin de semana
+        counts[turno]++;
       }
     }
   }
@@ -138,6 +136,7 @@ function calculateAnnualSummary() {
         const fecha = `2025-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const turno = localStorage.getItem(fecha);
         const isWeekend = [0, 6].includes(date.getDay());
+        // Incluir festivos trabajados en el total de días trabajados en fin de semana
         if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF' && turno !== 'FL') totalWeekendDays++;
         if (turno && counts.hasOwnProperty(turno)) counts[turno]++;
       }
