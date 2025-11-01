@@ -15,21 +15,19 @@
       --turno-pnr: #4CAF50;  /* Green */
       --turno-lpf: #4CAF50;  /* Green */
       --turno-vaa: #F44336;  /* Red */
-      --turno-df: #4CAF50;  /* Green */
+      --turno-df: #2196F3;  /* Blue */
+      --turno-he: #4CAF50;  /* Green */
       --festivo: #F44336;  /* Red */
       --festivo-convenio: #F44336;  /* Red */
       --october-17: #F44336;  /* Red */
       --turno-jp: #20B2AA;  /* Light Sea Green */
-      --turno-he: #c7e7a1;  /* Pistacho for H.Extras */
     }
   </style>
-</head>
-<body>
   <div class="controls">
     <div class="month-nav">
-      <button id="prevMonthBtn">Anterior</button>
+      <button onclick="prevMonth()">Anterior</button>
       <h2 id="currentMonth">Enero 2025</h2>
-      <button id="nextMonthBtn">Siguiente</button>
+      <button onclick="nextMonth()">Siguiente</button>
     </div>
     
     <div class="legend">
@@ -98,12 +96,12 @@
         <span>Descanso flexibilidad</span>
       </div>
       <div class="legend-item">
-        <div class="legend-color" style="background-color: var(--turno-jp)"></div>
-        <span>Jornada Partida</span>
+        <div class="legend-color" style="background-color: var(--turno-he)"></div>
+        <span>Horas Extras</span>
       </div>
       <div class="legend-item">
-        <div class="legend-color" style="background-color: var(--turno-he)"></div>
-        <span>H.Extras</span>
+        <div class="legend-color" style="background-color: var(--turno-jp)"></div>
+        <span>Jornada Partida</span>
       </div>
     </div>
   </div>
@@ -123,10 +121,8 @@
       <div class="summary-item" id="weekend-days" style="background-color: #8f8f8f">Días trabajados en fin de semana: 0</div>
       <div class="summary-item turno-b" id="count-b">Días de baja: 0</div>
       <div class="summary-item turno-vaa" id="count-vaa">Vacaciones año anterior: 0</div>
-      <!-- Horas Extras summary removed -->
-      <div class="summary-item turno-he" id="count-he">Horas Extras: 0.0 h</div>
+      <div class="summary-item turno-he" id="count-he">Horas Extras: 0 — 0.00 €</div>
       <div class="summary-item turno-f" id="count-f">Festivo trab.: 0</div>
-      <div class="summary-item turno-pd" id="count-pd">Plus D-Festivo: 0 — 0.00 €</div>
     </div>
     <div id="workDaysInfo" class="work-days-info"></div>
   </div>
@@ -149,8 +145,383 @@
     </div>
   </div>
 
-  <!-- removed large inline script: function renderCalendar() {} and many helpers -->
-  <!-- tombstone: // removed inline script that contained all calendar logic and initialization -->
-  <script type="module" src="main.js"></script>
+  <script>
+    const festivos2025 = ['2025-01-01', '2025-01-06', '2025-03-19', '2025-04-18', '2025-04-21', '2025-05-01', '2025-08-15', '2025-10-09', '2025-10-12', '2025-11-01', '2025-12-06', '2025-12-08', '2025-12-25'];
+    const diasEspeciales = ['2025-03-18', '2025-12-24', '2025-12-31'];
+    const diasNuevoEspeciales = ['2025-08-14', '2025-09-08'];
+    const diasOctubre17 = ['2025-10-17'];
+    let currentDate = new Date();
+    const turnosText = {
+      '': 'Descanso',
+      'M': 'Mañana',
+      'T': 'Tarde',
+      'N': 'Noche',
+      'A': 'Adelanto',
+      'V': 'Vacaciones',
+      'F': 'Festivo trabajado',  
+      'FL': 'Flexibilidad',
+      'B': 'Baja',
+      'PNR': 'Permiso no retribuido',
+      'LPF': 'Libres por festivo',
+      'VAA': 'Vacaciones año anterior',
+      'DF': 'Descanso flexibilidad',
+      'HE': 'Horas Extras',
+      'JP': 'Jornada Partida'
+    };
+    const diasSemana = ['Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sab.', 'Dom.'];
+    const FESTIVO_RATE = 297.838758; // euros per festivo trabajado
+    const NIGHT_RATE = 31.1554948; // euros per noche worked
+    const WEEKEND_RATE = 102.0080736; // euros per weekend day worked
+    const HE_HOURLY_RATE = 19.6296544; // euros per extra hour
+    const monthlyWorkDays = {
+      0: {
+        days: 21,
+        hours: 168
+      },
+      1: {
+        days: 20,
+        hours: 160
+      },
+      2: {
+        days: 19,
+        hours: 152
+      },
+      3: {
+        days: 20,
+        hours: 160
+      },
+      4: {
+        days: 21,
+        hours: 168
+      },
+      5: {
+        days: 21,
+        hours: 168
+      },
+      6: {
+        days: 23,
+        hours: 184
+      },
+      7: {
+        days: 19,
+        hours: 152
+      },
+      8: {
+        days: 21,
+        hours: 168
+      },
+      9: {
+        days: 21,
+        hours: 168
+      },
+      10: {
+        days: 20,
+        hours: 160
+      },
+      11: {
+        days: 19,
+        hours: 152
+      }
+    };
+
+    function updateSummary() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const counts = {
+        'M': 0,
+        'T': 0,
+        'N': 0,
+        'A': 0,
+        'V': 0,
+        'FL': 0,
+        'B': 0,
+        'PNR': 0,
+        'LPF': 0,
+        'VAA': 0,
+        'DF': 0,
+        'HE': 0,
+        'F': 0,
+        'JP': 0
+      };
+      
+      let weekendDays = 0;
+      
+      for (let day = 1; day <= 31; day++) {
+        const date = new Date(year, month, day);
+        if (date.getMonth() === month) {
+          const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const turno = localStorage.getItem(fecha);
+          
+          const isWeekend = [0, 6].includes(date.getDay());
+          if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF') {
+            weekendDays++;
+          }
+          
+          if (turno && counts.hasOwnProperty(turno)) {
+            counts[turno]++;
+          }
+        }
+      }
+      
+      document.getElementById('count-m').textContent = `Mañanas: ${counts['M']}`;
+      document.getElementById('count-t').textContent = `Tardes: ${counts['T']}`;
+      const nochesCount = counts['N'];
+      const nochesEuros = (nochesCount * NIGHT_RATE).toFixed(2);
+      document.getElementById('count-n').textContent = `Noches: ${nochesCount} — ${nochesEuros} €`;
+      document.getElementById('count-a').textContent = `Adelantos: ${counts['A']}`;
+      document.getElementById('count-v').textContent = `Vacaciones: ${counts['V']}`;
+      document.getElementById('count-fl').textContent = `Flexibilidad: ${counts['FL']}`;
+      document.getElementById('count-b').textContent = `Días de baja: ${counts['B']}`;
+      document.getElementById('count-vaa').textContent = `Vacaciones año anterior: ${counts['VAA']}`;
+      // show horas extras count and euros
+      const heCount = counts['HE'];
+      const heEuros = (heCount * HE_HOURLY_RATE).toFixed(2);
+      // create or update element if exists
+      if (document.getElementById('count-he')) {
+        document.getElementById('count-he').textContent = `Horas Extras: ${heCount} — ${heEuros} €`;
+      }
+      // show festivos trabajados count and euros
+      const festivosCount = counts['F'];
+      const festivosEuros = (festivosCount * FESTIVO_RATE).toFixed(2);
+      document.getElementById('count-f').textContent = `Festivo trab.: ${festivosCount} — ${festivosEuros} €`;
+      document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays}`;
+      
+      // show weekend euros for the month
+      const weekendEuros = (weekendDays * WEEKEND_RATE).toFixed(2);
+      document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays} — ${weekendEuros} €`;
+      
+      const total = Object.entries(counts).reduce((sum, [key, count]) => {
+        return (key !== 'B' && key !== 'LPF' && key !== 'DF' && key !== 'HE') ? sum + count : sum;
+      }, 0);
+      
+      document.getElementById('count-total').textContent = `Total: ${total}`;
+      
+      let totalVacationDaysUsed = 0;
+      for (let m = 0; m <= month; m++) {
+        for (let day = 1; day <= 31; day++) {
+          const fecha = `${year}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const turno = localStorage.getItem(fecha);
+          if (turno === 'V') {
+            totalVacationDaysUsed++;
+          }
+        }
+      }
+      const remainingVacationDays = 22 - totalVacationDaysUsed;
+      document.getElementById('vacation-days').textContent = `Días de vacaciones restantes: ${remainingVacationDays}`;
+
+      const annualSummary = document.getElementById('annual-summary');
+      annualSummary.classList.toggle('visible', month === 11);
+      if (month === 11) {
+        calculateAnnualSummary();
+      }
+    }
+
+    function calculateAnnualSummary() {
+      const counts = {
+        'M': 0,
+        'T': 0,
+        'N': 0,
+        'A': 0,
+        'V': 0,
+        'FL': 0,
+        'B': 0,
+        'PNR': 0,
+        'LPF': 0,
+        'F': 0,
+        'JP': 0
+      };
+      
+      let totalWeekendDays = 0;
+      
+      for (let month = 0; month < 12; month++) {
+        for (let day = 1; day <= 31; day++) {
+          const date = new Date(2025, month, day);
+          if (date.getMonth() === month) {
+            const fecha = `2025-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const turno = localStorage.getItem(fecha);
+            
+            const isWeekend = [0, 6].includes(date.getDay());
+            if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF') {
+              totalWeekendDays++;
+            }
+            
+            if (turno && counts.hasOwnProperty(turno)) {
+              counts[turno]++;
+            }
+          }
+        }
+      }
+      
+      document.getElementById('annual-m').textContent = `Mañanas: ${counts['M']}`;
+      document.getElementById('annual-t').textContent = `Tardes: ${counts['T']}`;
+      const annualNochesCount = counts['N'];
+      const annualNochesEuros = (annualNochesCount * NIGHT_RATE).toFixed(2);
+      document.getElementById('annual-n').textContent = `Noches: ${annualNochesCount} — ${annualNochesEuros} €`;
+      document.getElementById('annual-a').textContent = `Adelantos: ${counts['A']}`;
+      document.getElementById('annual-v').textContent = `Vacaciones: ${counts['V']}`;
+      // show annual horas extras with euros
+      const annualHeCount = counts['HE'];
+      const annualHeEuros = (annualHeCount * HE_HOURLY_RATE).toFixed(2);
+      if (document.getElementById('annual-he')) {
+        document.getElementById('annual-he').textContent = `Horas Extras: ${annualHeCount} — ${annualHeEuros} €`;
+      }
+      document.getElementById('annual-fl').textContent = `Flexibilidad: ${counts['FL']}`;
+      document.getElementById('annual-b').textContent = `Total días de baja: ${counts['B']}`;
+      // show annual festivos trabajados with euros
+      const annualFestivosCount = counts['F'];
+      const annualFestivosEuros = (annualFestivosCount * FESTIVO_RATE).toFixed(2);
+      document.getElementById('annual-f').textContent = `Total festivos trab.: ${annualFestivosCount} — ${annualFestivosEuros} €`;
+      
+      // show annual weekend days with euros
+      const annualWeekendEuros = (totalWeekendDays * WEEKEND_RATE).toFixed(2);
+      document.getElementById('annual-weekend-days').textContent = `Total días trabajados en fin de semana: ${totalWeekendDays} — ${annualWeekendEuros} €`;
+      
+      const total = Object.entries(counts).reduce((sum, [key, count]) => {
+        return (key !== 'B' && key !== 'LPF') ? sum + count : sum;
+      }, 0);
+      
+      document.getElementById('annual-total').textContent = `Total días trabajados: ${total}`;
+      document.getElementById('annual-vacation-days').textContent = `Total días vacaciones usados: ${counts['V']}`;
+    }
+
+    function getTurnoColor(turno) {
+      const colors = {
+        '': 'white',
+        'M': 'var(--turno-m)',
+        'T': 'var(--turno-t)',
+        'N': 'var(--turno-n)',
+        'A': 'var(--turno-a)',
+        'V': 'var(--turno-v)',
+        'F': 'var(--festivo)',
+        'FL': 'var(--turno-fl)',
+        'B': 'var(--turno-b)',
+        'PNR': 'var(--turno-pnr)',
+        'LPF': 'var(--turno-lpf)',
+        'VAA': 'var(--turno-vaa)',
+        'DF': 'var(--turno-df)',
+        'HE': 'var(--turno-he)',
+        'JP': 'var(--turno-jp)'
+      };
+      return colors[turno] || 'white';
+    }
+
+    function renderCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const monthName = new Intl.DateTimeFormat('es-ES', {
+        month: 'long',
+        year: 'numeric'
+      }).format(currentDate);
+      document.getElementById('currentMonth').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+      const calendar = document.getElementById('calendar');
+      calendar.innerHTML = '';
+      diasSemana.forEach(dia => {
+        const header = document.createElement('div');
+        header.className = 'day-header';
+        header.textContent = dia;
+        calendar.appendChild(header);
+      });
+      const mondayBasedDay = (firstDay.getDay() + 6) % 7;
+      for (let i = 0; i < mondayBasedDay; i++) {
+        calendar.appendChild(document.createElement('div'));
+      }
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        const date = new Date(year, month, day);
+        const dayEl = document.createElement('div');
+        dayEl.className = 'day';
+        const mondayBasedDayOfWeek = (date.getDay() + 6) % 7;
+        if (mondayBasedDayOfWeek === 5 || mondayBasedDayOfWeek === 6) {
+          dayEl.classList.add('weekend');
+        } else {
+          dayEl.classList.add('weekday');
+        }
+        const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        if (festivos2025.includes(fecha)) {
+          dayEl.classList.add('festivo');
+        }
+        if (diasEspeciales.includes(fecha)) {
+          dayEl.classList.add('especial');
+          const festivoText = document.createElement('div');
+          festivoText.style.fontSize = '0.6rem';
+          festivoText.style.fontWeight = 'bold';
+          festivoText.textContent = 'Festivo Convenio';
+          dayEl.appendChild(festivoText);
+        }
+        if (diasNuevoEspeciales.includes(fecha)) {
+          dayEl.classList.add('nuevo-especial');
+        }
+        if (diasOctubre17.includes(fecha)) {
+          dayEl.classList.add('october-17');
+        }
+        const savedTurno = localStorage.getItem(fecha) || '';
+        if (diasOctubre17.includes(fecha) && month === 9) {
+          const patronaText = document.createElement('div');
+          patronaText.style.fontSize = '0.6rem';
+          patronaText.style.fontWeight = 'bold';
+          patronaText.textContent = 'Patrona';
+          dayEl.appendChild(patronaText);
+        }
+        dayEl.innerHTML = `
+          <div class="day-header">${day}</div>
+          <div class="day-content ${savedTurno ? 'turno-' + savedTurno.toLowerCase() : ''}">
+            <select class="turno-select" onchange="asignarTurno(this, '${fecha}')" style="background-color: ${getTurnoColor(savedTurno)}">
+              <option value="" ${savedTurno === '' ? 'selected' : ''}>Descanso</option>
+              <option value="M" ${savedTurno === 'M' ? 'selected' : ''}>Mañana</option>
+              <option value="T" ${savedTurno === 'T' ? 'selected' : ''}>Tarde</option>
+              <option value="N" ${savedTurno === 'N' ? 'selected' : ''}>Noche</option>
+              <option value="A" ${savedTurno === 'A' ? 'selected' : ''}>Adelanto</option>
+              <option value="V" ${savedTurno === 'V' ? 'selected' : ''}>Vacaciones</option>
+              <option value="VAA" ${savedTurno === 'VAA' ? 'selected' : ''}>Vacaciones año anterior</option>
+              <option value="F" ${savedTurno === 'F' ? 'selected' : ''}>Festivo trabajado</option>
+              <option value="FL" ${savedTurno === 'FL' ? 'selected' : ''}>Flexibilidad</option>
+              <option value="B" ${savedTurno === 'B' ? 'selected' : ''}>Baja</option>
+              <option value="PNR" ${savedTurno === 'PNR' ? 'selected' : ''}>Permiso no retribuido</option>
+              <option value="LPF" ${savedTurno === 'LPF' ? 'selected' : ''}>Libres por festivo</option>
+              <option value="DF" ${savedTurno === 'DF' ? 'selected' : ''}>Descanso flexibilidad</option>
+              <option value="HE" ${savedTurno === 'HE' ? 'selected' : ''}>Horas Extras</option>
+              <option value="JP" ${savedTurno === 'JP' ? 'selected' : ''}>Jornada Partida</option>
+            </select>
+          </div>
+        `;
+        calendar.appendChild(dayEl);
+      }
+      const workInfo = monthlyWorkDays[month];
+      const workDaysInfo = document.getElementById('workDaysInfo');
+      if (workInfo) {
+        workDaysInfo.textContent = `Días laborables: ${workInfo.days} días ${workInfo.hours} Horas`;
+      } else {
+        workDaysInfo.textContent = '';
+      }
+      updateSummary();
+    }
+
+    function asignarTurno(select, fecha) {
+      const turno = select.value;
+      const dayContent = select.parentElement;
+      dayContent.className = 'day-content';
+      if (turno) {
+        dayContent.classList.add(`turno-${turno.toLowerCase()}`);
+      }
+      select.style.backgroundColor = getTurnoColor(turno);
+      localStorage.setItem(fecha, turno);
+      updateSummary();
+    }
+
+    function prevMonth() {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+    }
+
+    function nextMonth() {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+    }
+
+    renderCalendar();
+  </script>
+</head>
+<body>
 </body>
 </html>
