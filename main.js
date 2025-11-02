@@ -56,26 +56,32 @@ function updateSummary() {
     'M': 0, 'T': 0, 'N': 0, 'A': 0, 'V': 0, 'FL': 0, 'B': 0, 'PNR': 0, 'LPF': 0, 'VAA': 0, 'DF': 0, 'PD': 0, 'F': 0, 'JP': 0
   };
   let weekendDays = 0;
-
+  let weekendFestivos = 0;
+  let weekendVacaciones = 0;
+  
   for (let day = 1; day <= 31; day++) {
     const date = new Date(year, month, day);
     if (date.getMonth() === month) {
       const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const turno = localStorage.getItem(fecha);
-
+ 
       const isWeekend = [0, 6].includes(date.getDay());
       // Contar como día trabajado en fin de semana también si es festivo trabajado (F)
       if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF' && turno !== 'FL') {
         weekendDays++;
       }
-
+      // Count vacation days on weekends so they can be excluded from Total
+      if (isWeekend && turno === 'V') weekendVacaciones++;
+      // track festivos worked that fall on weekend so they can be excluded from Total
+      if (isWeekend && turno === 'F') weekendFestivos++;
+ 
       if (turno && counts.hasOwnProperty(turno)) {
         // Contamos festivos trabajados (F) independientemente de si caen en fin de semana
         counts[turno]++;
       }
     }
   }
-
+ 
   document.getElementById('count-m').textContent = `Mañanas: ${counts['M']}`;
   document.getElementById('count-t').textContent = `Tardes: ${counts['T']}`;
   const nochesCount = counts['N'];
@@ -98,9 +104,12 @@ function updateSummary() {
   const weekendEuros = (weekendDays * WEEKEND_RATE).toFixed(2);
   document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays} — ${weekendEuros} €`;
 
-  const total = Object.entries(counts).reduce((sum, [key, count]) => {
+  let total = Object.entries(counts).reduce((sum, [key, count]) => {
     return (key !== 'B' && key !== 'LPF' && key !== 'DF') ? sum + count : sum;
   }, 0);
+  // Exclude festivos trabajados that fall on weekend from the Total per user's request
+  // Also exclude vacation days that fall on weekends from the Total
+  total = Math.max(0, total - weekendFestivos - weekendVacaciones);
   document.getElementById('count-total').textContent = `Total: ${total}`;
 
   let totalVacationDaysUsed = 0;
@@ -128,6 +137,8 @@ function calculateAnnualSummary() {
   const counts = { 'M': 0, 'T': 0, 'N': 0, 'A': 0, 'V': 0, 'FL': 0, 'B': 0, 'PNR': 0, 'LPF': 0, 'PD': 0, 'F': 0, 'JP': 0 };
   let totalWeekendDays = 0;
   let annualHE = 0;
+  let weekendFestivosAnnual = 0;
+  let weekendVacacionesAnnual = 0;
   
   for (let month = 0; month < 12; month++) {
     for (let day = 1; day <= 31; day++) {
@@ -138,6 +149,9 @@ function calculateAnnualSummary() {
         const isWeekend = [0, 6].includes(date.getDay());
         // Incluir festivos trabajados en el total de días trabajados en fin de semana
         if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF' && turno !== 'FL') totalWeekendDays++;
+        if (isWeekend && turno === 'F') weekendFestivosAnnual++;
+        // Count vacation days on weekends to exclude from annual Total
+        if (isWeekend && turno === 'V') weekendVacacionesAnnual++;
         if (turno && counts.hasOwnProperty(turno)) counts[turno]++;
       }
     }
@@ -174,9 +188,12 @@ function calculateAnnualSummary() {
   const annualWeekendEuros = (totalWeekendDays * WEEKEND_RATE).toFixed(2);
   document.getElementById('annual-weekend-days').textContent = `Total días trabajados en fin de semana: ${totalWeekendDays} — ${annualWeekendEuros} €`;
 
-  const total = Object.entries(counts).reduce((sum, [key, count]) => {
+  let total = Object.entries(counts).reduce((sum, [key, count]) => {
     return (key !== 'B' && key !== 'LPF') ? sum + count : sum;
   }, 0);
+  // Exclude annual festivos trabajados that fall on weekends from Annual Total
+  // Also exclude vacation days that fall on weekends from the Annual Total
+  total = Math.max(0, total - weekendFestivosAnnual - weekendVacacionesAnnual);
   document.getElementById('annual-total').textContent = `Total días trabajados: ${total}`;
   document.getElementById('annual-vacation-days').textContent = `Total días vacaciones usados: ${counts['V']}`;
   document.getElementById('annual-he').textContent = `Horas Extras: ${annualHE.toFixed(1)} h — ${(annualHE * HE_RATE).toFixed(2)} €`;
