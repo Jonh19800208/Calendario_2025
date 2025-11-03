@@ -7,12 +7,32 @@ let currentDate = new Date();
 
 const diasSemana = ['Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sab.', 'Dom.'];
 
-const FESTIVO_RATE = 297.838758;
-const NIGHT_RATE = 31.1554948;
-const WEEKEND_RATE = 102.0080736;
-const PLUS_DF_RATE = 102.007695;
-const HE_RATE = 19.6296544;
-
+const FESTIVO_RATE_2025 = 297.838758;
+const FESTIVO_RATE_2026 = 302.306339; // per user's request for 2026
+function getFestivoRate(year) {
+  return year === 2026 ? FESTIVO_RATE_2026 : FESTIVO_RATE_2025;
+}
+const NIGHT_RATE_2025 = 31.1554948;
+const NIGHT_RATE_2026 = 32.09015968;
+const WEEKEND_RATE_2025 = 102.0080736;
+const WEEKEND_RATE_2026 = 103.5421952;
+function getNightRate(year) {
+  if (year === 2026) return NIGHT_RATE_2026;
+  return NIGHT_RATE_2025;
+}
+function getWeekendRate(year) {
+  return year === 2026 ? WEEKEND_RATE_2026 : WEEKEND_RATE_2025;
+}
+const PLUS_DF_RATE_2025 = 102.007695;
+const PLUS_DF_RATE_2026 = 103.53781; // per user's request for 2026
+function getPlusDfRate(year) {
+  return year === 2026 ? PLUS_DF_RATE_2026 : PLUS_DF_RATE_2025;
+}
+const HE_RATE_2025 = 19.6296544;
+const HE_RATE_2026 = 19.9240992;
+function getHeRate(year) {
+  return year === 2026 ? HE_RATE_2026 : HE_RATE_2025;
+}
 const monthlyWorkDays = {
   0: { days: 21, hours: 168 },
   1: { days: 20, hours: 160 },
@@ -85,7 +105,7 @@ function updateSummary() {
   document.getElementById('count-m').textContent = `Mañanas: ${counts['M']}`;
   document.getElementById('count-t').textContent = `Tardes: ${counts['T']}`;
   const nochesCount = counts['N'];
-  const nochesEuros = (nochesCount * NIGHT_RATE).toFixed(2);
+  const nochesEuros = (nochesCount * getNightRate(year)).toFixed(2);
   document.getElementById('count-n').textContent = `Noches: ${nochesCount} — ${nochesEuros} €`;
   document.getElementById('count-a').textContent = `Adelantos: ${counts['A']}`;
   document.getElementById('count-v').textContent = `Vacaciones: ${counts['V']}`;
@@ -94,14 +114,14 @@ function updateSummary() {
   document.getElementById('count-vaa').textContent = `Vacaciones año anterior: ${counts['VAA']}`;
 
   const festivosCount = counts['F'];
-  const festivosEuros = (festivosCount * FESTIVO_RATE).toFixed(2);
+  const festivosEuros = (festivosCount * getFestivoRate(year)).toFixed(2);
   document.getElementById('count-f').textContent = `Festivo trab.: ${festivosCount} — ${festivosEuros} €`;
 
   const pdCount = counts['PD'];
-  const pdEuros = (pdCount * PLUS_DF_RATE).toFixed(2);
+  const pdEuros = (pdCount * getPlusDfRate(year)).toFixed(2);
   document.getElementById('count-pd').textContent = `Plus D-Festivo: ${pdCount} — ${pdEuros} €`;
 
-  const weekendEuros = (weekendDays * WEEKEND_RATE).toFixed(2);
+  const weekendEuros = (weekendDays * getWeekendRate(year)).toFixed(2);
   document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays} — ${weekendEuros} €`;
 
   let total = Object.entries(counts).reduce((sum, [key, count]) => {
@@ -126,7 +146,7 @@ function updateSummary() {
   // Horas Extras (monthly) from storage
   const heMonthly = getStoredHE(year, month);
   const heEl = document.getElementById('count-he');
-  if (heEl) heEl.textContent = `Horas Extras: ${heMonthly.toFixed(1)} h — ${(heMonthly * HE_RATE).toFixed(2)} €`;
+  if (heEl) heEl.textContent = `Horas Extras: ${heMonthly.toFixed(1)} h — ${(heMonthly * getHeRate(year)).toFixed(2)} €`;
 
   const annualSummary = document.getElementById('annual-summary');
   annualSummary.classList.toggle('visible', currentDate.getMonth() === 11);
@@ -162,7 +182,9 @@ function calculateAnnualSummary() {
   document.getElementById('annual-m').textContent = `Mañanas: ${counts['M']}`;
   document.getElementById('annual-t').textContent = `Tardes: ${counts['T']}`;
   const annualNochesCount = counts['N'];
-  const annualNochesEuros = (annualNochesCount * NIGHT_RATE).toFixed(2);
+  // annual summary may span multiple years in future; for current data use 2025 baseline,
+  // here calculate using 2025 since calculateAnnualSummary loops year 2025 explicitly.
+  const annualNochesEuros = (annualNochesCount * getNightRate(2025)).toFixed(2);
   document.getElementById('annual-n').textContent = `Noches: ${annualNochesCount} — ${annualNochesEuros} €`;
   document.getElementById('annual-a').textContent = `Adelantos: ${counts['A']}`;
   document.getElementById('annual-v').textContent = `Vacaciones: ${counts['V']}`;
@@ -171,12 +193,12 @@ function calculateAnnualSummary() {
   document.getElementById('annual-b').textContent = `Total días de baja: ${counts['B']}`;
 
   const annualFestivosCount = counts['F'];
-  const annualFestivosEuros = (annualFestivosCount * FESTIVO_RATE).toFixed(2);
+  const annualFestivosEuros = (annualFestivosCount * getFestivoRate(2025)).toFixed(2);
   document.getElementById('annual-f').textContent = `Total festivos trab.: ${annualFestivosCount} — ${annualFestivosEuros} €`;
 
   let annualPdEl = document.getElementById('annual-pd');
   const annualPdCount = counts['PD'] || 0;
-  const annualPdEuros = (annualPdCount * PLUS_DF_RATE).toFixed(2);
+  const annualPdEuros = (annualPdCount * getPlusDfRate(2025)).toFixed(2);
   if (!annualPdEl) {
     annualPdEl = document.createElement('div');
     annualPdEl.id = 'annual-pd';
@@ -185,7 +207,7 @@ function calculateAnnualSummary() {
   }
   annualPdEl.textContent = `Total Plus D-Festivo: ${annualPdCount} — ${annualPdEuros} €`;
 
-  const annualWeekendEuros = (totalWeekendDays * WEEKEND_RATE).toFixed(2);
+  const annualWeekendEuros = (totalWeekendDays * getWeekendRate(2025)).toFixed(2);
   document.getElementById('annual-weekend-days').textContent = `Total días trabajados en fin de semana: ${totalWeekendDays} — ${annualWeekendEuros} €`;
 
   let total = Object.entries(counts).reduce((sum, [key, count]) => {
@@ -196,7 +218,7 @@ function calculateAnnualSummary() {
   total = Math.max(0, total - weekendFestivosAnnual - weekendVacacionesAnnual);
   document.getElementById('annual-total').textContent = `Total días trabajados: ${total}`;
   document.getElementById('annual-vacation-days').textContent = `Total días vacaciones usados: ${counts['V']}`;
-  document.getElementById('annual-he').textContent = `Horas Extras: ${annualHE.toFixed(1)} h — ${(annualHE * HE_RATE).toFixed(2)} €`;
+  document.getElementById('annual-he').textContent = `Horas Extras: ${annualHE.toFixed(1)} h — ${(annualHE * getHeRate(2025)).toFixed(2)} €`;
 }
 
 function renderCalendar() {
