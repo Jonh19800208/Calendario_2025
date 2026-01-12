@@ -1,7 +1,9 @@
-const festivos2025 = ['2025-01-01', '2025-01-06', '2025-03-19', '2025-04-18', '2025-04-21', '2025-05-01', '2025-08-15', '2025-10-09', '2025-10-12', '2025-11-01', '2025-12-06', '2025-12-08', '2025-12-25'];
-const diasEspeciales = ['2025-03-18', '2025-12-24', '2025-12-31'];
-const diasNuevoEspeciales = ['2025-08-14', '2025-09-08'];
-const diasOctubre17 = ['2025-10-17'];
+const festivos2025 = ['2025-01-01', '2025-01-06', '2025-03-19', '2025-04-18', '2025-04-21', '2025-05-01', '2025-08-15', '2025-10-09', '2025-10-12', '2025-11-01', '2025-12-06', '2025-12-08', '2025-12-24', '2025-12-25', '2025-12-31'];
+// Festivos for 2026 (user requested: 1 Jan and 6 Jan are holidays)
+const festivos2026 = ['2026-01-01', '2026-01-06', '2026-03-19', '2026-03-18', '2026-04-03', '2026-04-06', '2026-05-01', '2026-06-24', '2026-08-14', '2026-08-15', '2026-09-07', '2026-10-09', '2026-10-12', '2026-12-08', '2026-12-24', '2026-12-25', '2026-12-31'];
+const diasEspeciales = ['2025-03-18', '2025-12-24', '2025-12-31', '2026-03-18', '2026-12-24', '2026-12-31'];
+const diasNuevoEspeciales = ['2025-08-14', '2025-09-08', '2026-08-14', '2026-09-07'];
+const diasPatrona = ['2025-10-17', '2026-11-13'];
 
 let currentDate = new Date();
 
@@ -125,7 +127,8 @@ function updateSummary() {
   document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays} — ${weekendEuros} €`;
 
   let total = Object.entries(counts).reduce((sum, [key, count]) => {
-    return (key !== 'B' && key !== 'LPF' && key !== 'DF') ? sum + count : sum;
+    // Excluir B, LPF, DF y PD (Plus D-Festivo) del conteo total de días trabajados
+    return (key !== 'B' && key !== 'LPF' && key !== 'DF' && key !== 'PD') ? sum + count : sum;
   }, 0);
   // Exclude festivos trabajados that fall on weekend from the Total per user's request
   // Also exclude vacation days that fall on weekends from the Total
@@ -154,6 +157,11 @@ function updateSummary() {
 }
 
 function calculateAnnualSummary() {
+  const year = currentDate.getFullYear();
+  // update annual title to match selected year
+  const titleEl = document.getElementById('annualTitle');
+  if (titleEl) titleEl.textContent = `Resumen Anual ${year}`;
+
   const counts = { 'M': 0, 'T': 0, 'N': 0, 'A': 0, 'V': 0, 'FL': 0, 'B': 0, 'PNR': 0, 'LPF': 0, 'PD': 0, 'F': 0, 'JP': 0 };
   let totalWeekendDays = 0;
   let annualHE = 0;
@@ -162,29 +170,26 @@ function calculateAnnualSummary() {
   
   for (let month = 0; month < 12; month++) {
     for (let day = 1; day <= 31; day++) {
-      const date = new Date(2025, month, day);
+      const date = new Date(year, month, day);
       if (date.getMonth() === month) {
-        const fecha = `2025-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const turno = localStorage.getItem(fecha);
         const isWeekend = [0, 6].includes(date.getDay());
-        // Incluir festivos trabajados en el total de días trabajados en fin de semana
+        // Include worked days on weekend in weekend counter
         if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF' && turno !== 'FL') totalWeekendDays++;
         if (isWeekend && turno === 'F') weekendFestivosAnnual++;
-        // Count vacation days on weekends to exclude from annual Total
         if (isWeekend && turno === 'V') weekendVacacionesAnnual++;
         if (turno && counts.hasOwnProperty(turno)) counts[turno]++;
       }
     }
-    // accumulate Horas Extras for this month into annual total
-    annualHE += getStoredHE(2025, month);
+    // accumulate Horas Extras for this month into annual total (use the same year)
+    annualHE += getStoredHE(year, month);
   }
 
   document.getElementById('annual-m').textContent = `Mañanas: ${counts['M']}`;
   document.getElementById('annual-t').textContent = `Tardes: ${counts['T']}`;
   const annualNochesCount = counts['N'];
-  // annual summary may span multiple years in future; for current data use 2025 baseline,
-  // here calculate using 2025 since calculateAnnualSummary loops year 2025 explicitly.
-  const annualNochesEuros = (annualNochesCount * getNightRate(2025)).toFixed(2);
+  const annualNochesEuros = (annualNochesCount * getNightRate(year)).toFixed(2);
   document.getElementById('annual-n').textContent = `Noches: ${annualNochesCount} — ${annualNochesEuros} €`;
   document.getElementById('annual-a').textContent = `Adelantos: ${counts['A']}`;
   document.getElementById('annual-v').textContent = `Vacaciones: ${counts['V']}`;
@@ -193,12 +198,12 @@ function calculateAnnualSummary() {
   document.getElementById('annual-b').textContent = `Total días de baja: ${counts['B']}`;
 
   const annualFestivosCount = counts['F'];
-  const annualFestivosEuros = (annualFestivosCount * getFestivoRate(2025)).toFixed(2);
+  const annualFestivosEuros = (annualFestivosCount * getFestivoRate(year)).toFixed(2);
   document.getElementById('annual-f').textContent = `Total festivos trab.: ${annualFestivosCount} — ${annualFestivosEuros} €`;
 
   let annualPdEl = document.getElementById('annual-pd');
   const annualPdCount = counts['PD'] || 0;
-  const annualPdEuros = (annualPdCount * getPlusDfRate(2025)).toFixed(2);
+  const annualPdEuros = (annualPdCount * getPlusDfRate(year)).toFixed(2);
   if (!annualPdEl) {
     annualPdEl = document.createElement('div');
     annualPdEl.id = 'annual-pd';
@@ -207,18 +212,19 @@ function calculateAnnualSummary() {
   }
   annualPdEl.textContent = `Total Plus D-Festivo: ${annualPdCount} — ${annualPdEuros} €`;
 
-  const annualWeekendEuros = (totalWeekendDays * getWeekendRate(2025)).toFixed(2);
+  const annualWeekendEuros = (totalWeekendDays * getWeekendRate(year)).toFixed(2);
   document.getElementById('annual-weekend-days').textContent = `Total días trabajados en fin de semana: ${totalWeekendDays} — ${annualWeekendEuros} €`;
 
   let total = Object.entries(counts).reduce((sum, [key, count]) => {
-    return (key !== 'B' && key !== 'LPF') ? sum + count : sum;
+    // Excluir B, LPF y PD (Plus D-Festivo) del total anual de días trabajados
+    return (key !== 'B' && key !== 'LPF' && key !== 'PD') ? sum + count : sum;
   }, 0);
   // Exclude annual festivos trabajados that fall on weekends from Annual Total
   // Also exclude vacation days that fall on weekends from the Annual Total
   total = Math.max(0, total - weekendFestivosAnnual - weekendVacacionesAnnual);
   document.getElementById('annual-total').textContent = `Total días trabajados: ${total}`;
   document.getElementById('annual-vacation-days').textContent = `Total días vacaciones usados: ${counts['V']}`;
-  document.getElementById('annual-he').textContent = `Horas Extras: ${annualHE.toFixed(1)} h — ${(annualHE * getHeRate(2025)).toFixed(2)} €`;
+  document.getElementById('annual-he').textContent = `Horas Extras: ${annualHE.toFixed(1)} h — ${(annualHE * getHeRate(year)).toFixed(2)} €`;
 }
 
 function renderCalendar() {
@@ -252,8 +258,26 @@ function renderCalendar() {
     if (mondayBasedDayOfWeek === 5 || mondayBasedDayOfWeek === 6) dayEl.classList.add('weekend'); else dayEl.classList.add('weekday');
 
     const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    if (festivos2025.includes(fecha)) dayEl.classList.add('festivo');
-    if (diasEspeciales.includes(fecha)) {
+    // mark festivos depending on the year
+    if ((year === 2025 && festivos2025.includes(fecha)) || (year === 2026 && festivos2026.includes(fecha))) dayEl.classList.add('festivo');
+    // Special-case: 18 March 2026 should be ochre
+    if (fecha === '2026-03-18') {
+      dayEl.classList.add('mar18-2026');
+      const festivoText = document.createElement('div');
+      festivoText.style.fontSize = '0.6rem';
+      festivoText.style.fontWeight = 'bold';
+      festivoText.textContent = 'Festivo Convenio';
+      dayEl.appendChild(festivoText);
+    } else if (fecha === '2026-12-24' || fecha === '2026-12-31') {
+      // 24 and 31 December 2026 should be khaki (F0E68C)
+      const cls = fecha === '2026-12-24' ? 'dec24-2026' : 'dec31-2026';
+      dayEl.classList.add(cls);
+      const festivoText = document.createElement('div');
+      festivoText.style.fontSize = '0.6rem';
+      festivoText.style.fontWeight = 'bold';
+      festivoText.textContent = 'Especial';
+      dayEl.appendChild(festivoText);
+    } else if (diasEspeciales.includes(fecha)) {
       dayEl.classList.add('especial');
       const festivoText = document.createElement('div');
       festivoText.style.fontSize = '0.6rem';
@@ -262,10 +286,10 @@ function renderCalendar() {
       dayEl.appendChild(festivoText);
     }
     if (diasNuevoEspeciales.includes(fecha)) dayEl.classList.add('nuevo-especial');
-    if (diasOctubre17.includes(fecha)) dayEl.classList.add('october-17');
+    if (diasPatrona.includes(fecha)) dayEl.classList.add('patrona');
 
     const savedTurno = localStorage.getItem(fecha) || '';
-    if (diasOctubre17.includes(fecha) && month === 9) {
+    if (diasPatrona.includes(fecha)) {
       const patronaText = document.createElement('div');
       patronaText.style.fontSize = '0.6rem';
       patronaText.style.fontWeight = 'bold';

@@ -11,7 +11,7 @@
   --nuevo-especial: #2ecc71;
   --october-17: #DAA520;
   --turno-fl: #FFA07A;
-  --festivo-convenio: #D3D3D3;
+  --festivo-convenio: #F0E68C;
   --turno-b: #4682B4; 
   --turno-pnr: #FF1493; 
   --turno-lpf: #40E0D0; 
@@ -92,6 +92,20 @@ body::before {
 
 .day.october-17 {
   background-color: var(--october-17);
+}
+.day.patrona {
+  background-color: var(--october-17);
+}
+
+/* 18 March 2026: special color (updated to F0E68C) */
+.day.mar18-2026 {
+  background-color: #F0E68C;
+}
+
+/* 24 and 31 December 2026: khaki F0E68C per user request */
+.day.dec24-2026,
+.day.dec31-2026 {
+  background-color: #F0E68C;
 }
 
 .day.nuevo-dia {
