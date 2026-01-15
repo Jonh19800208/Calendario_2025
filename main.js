@@ -50,6 +50,27 @@ const monthlyWorkDays = {
   11: { days: 19, hours: 152 }
 };
 
+/**
+ * Return monthly work days data, allowing year-specific overrides.
+ * Currently: January (month 0), February (month 1) and March (month 2) of 2026 are 20 days / 160 hours.
+ */
+function getMonthlyWorkDays(year, month) {
+  // Year-specific overrides for 2026:
+  // enero 2026 => 20 días, 160 horas
+  if (year === 2026 && month === 0) return { days: 20, hours: 160 };
+  // febrero 2026 => 20 días, 160 horas
+  if (year === 2026 && month === 1) return { days: 20, hours: 160 };
+  // marzo 2026 => 20 días, 160 horas (user requested)
+  if (year === 2026 && month === 2) return { days: 20, hours: 160 };
+  // mayo 2026 => 20 días, 160 horas (added)
+  if (year === 2026 && month === 4) return { days: 20, hours: 160 };
+  // agosto 2026 => 20 días, 160 horas (user requested)
+  if (year === 2026 && month === 7) return { days: 20, hours: 160 };
+  // octubre 2026 => 20 días, 160 horas (user requested)
+  if (year === 2026 && month === 9) return { days: 20, hours: 160 };
+  return monthlyWorkDays[month] || null;
+}
+
 function getTurnoColor(turno) {
   const colors = {
     '': 'white',
@@ -378,7 +399,7 @@ function renderCalendar() {
     });
   }
 
-  const workInfo = monthlyWorkDays[currentDate.getMonth()];
+  const workInfo = getMonthlyWorkDays(currentDate.getFullYear(), currentDate.getMonth());
   const workDaysInfo = document.getElementById('workDaysInfo');
   workDaysInfo.textContent = workInfo ? `Días laborables: ${workInfo.days} días ${workInfo.hours} Horas` : '';
 
