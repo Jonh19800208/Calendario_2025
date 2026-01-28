@@ -108,9 +108,13 @@ function updateSummary() {
       const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const turno = localStorage.getItem(fecha);
  
+      // If this date is a patrona day, do not count it as a worked day
+      if (diasPatrona.includes(fecha)) {
+        continue;
+      }
       const isWeekend = [0, 6].includes(date.getDay());
       // Contar como día trabajado en fin de semana también si es festivo trabajado (F)
-      if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF' && turno !== 'FL') {
+      if (isWeekend && turno && !['','V','B','LPF','FL'].includes(turno)) {
         weekendDays++;
       }
       // Count vacation days on weekends so they can be excluded from Total
@@ -195,9 +199,13 @@ function calculateAnnualSummary() {
       if (date.getMonth() === month) {
         const fecha = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const turno = localStorage.getItem(fecha);
+        // If this date is a patrona day, do not count it as a worked day
+        if (diasPatrona.includes(fecha)) {
+          continue;
+        }
         const isWeekend = [0, 6].includes(date.getDay());
         // Include worked days on weekend in weekend counter
-        if (isWeekend && turno && turno !== '' && turno !== 'V' && turno !== 'B' && turno !== 'LPF' && turno !== 'FL') totalWeekendDays++;
+        if (isWeekend && turno && !['','V','B','LPF','FL'].includes(turno)) totalWeekendDays++;
         if (isWeekend && turno === 'F') weekendFestivosAnnual++;
         if (isWeekend && turno === 'V') weekendVacacionesAnnual++;
         if (turno && counts.hasOwnProperty(turno)) counts[turno]++;
