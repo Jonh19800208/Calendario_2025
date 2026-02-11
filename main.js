@@ -96,7 +96,7 @@ function updateSummary() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const counts = {
-    'M': 0, 'T': 0, 'N': 0, 'A': 0, 'V': 0, 'FL': 0, 'B': 0, 'PNR': 0, 'LPF': 0, 'VAA': 0, 'DF': 0, 'PD': 0, 'F': 0, 'JP': 0
+    'M': 0, 'T': 0, 'N': 0, 'A': 0, 'V': 0, 'FL': 0, 'B': 0, 'PNR': 0, 'LPF': 0, 'VAA': 0, 'DF': 0, 'PD': 0, 'PSD': 0, 'F': 0, 'JP': 0
   };
   let weekendDays = 0;
   let weekendFestivos = 0;
@@ -134,7 +134,7 @@ function updateSummary() {
   const nochesCount = counts['N'];
   const nochesEuros = (nochesCount * getNightRate(year)).toFixed(2);
   document.getElementById('count-n').textContent = `Noches: ${nochesCount} — ${nochesEuros} €`;
-  document.getElementById('count-a').textContent = `Adelantos: ${counts['A']}`;
+  document.getElementById('count-a').textContent = `Adelanto turno: ${counts['A']}`;
   document.getElementById('count-v').textContent = `Vacaciones: ${counts['V']}`;
   document.getElementById('count-fl').textContent = `Flexibilidad: ${counts['FL']}`;
   document.getElementById('count-b').textContent = `Días de baja: ${counts['B']}`;
@@ -152,7 +152,7 @@ function updateSummary() {
   document.getElementById('weekend-days').textContent = `Días trabajados en fin de semana: ${weekendDays} — ${weekendEuros} €`;
 
   let total = Object.entries(counts).reduce((sum, [key, count]) => {
-    // Excluir B, LPF, DF y PD (Plus D-Festivo) del conteo total de días trabajados
+    // Excluir B, LPF, DF y PD del conteo total de días trabajados (PSD cuenta como día trabajado)
     return (key !== 'B' && key !== 'LPF' && key !== 'DF' && key !== 'PD') ? sum + count : sum;
   }, 0);
   // Exclude festivos trabajados that fall on weekend from the Total per user's request
@@ -187,7 +187,7 @@ function calculateAnnualSummary() {
   const titleEl = document.getElementById('annualTitle');
   if (titleEl) titleEl.textContent = `Resumen Anual ${year}`;
 
-  const counts = { 'M': 0, 'T': 0, 'N': 0, 'A': 0, 'V': 0, 'FL': 0, 'B': 0, 'PNR': 0, 'LPF': 0, 'PD': 0, 'F': 0, 'JP': 0 };
+  const counts = { 'M': 0, 'T': 0, 'N': 0, 'A': 0, 'V': 0, 'FL': 0, 'B': 0, 'PNR': 0, 'LPF': 0, 'PD': 0, 'PSD': 0, 'F': 0, 'JP': 0 };
   let totalWeekendDays = 0;
   let annualHE = 0;
   let weekendFestivosAnnual = 0;
@@ -220,7 +220,7 @@ function calculateAnnualSummary() {
   const annualNochesCount = counts['N'];
   const annualNochesEuros = (annualNochesCount * getNightRate(year)).toFixed(2);
   document.getElementById('annual-n').textContent = `Noches: ${annualNochesCount} — ${annualNochesEuros} €`;
-  document.getElementById('annual-a').textContent = `Adelantos: ${counts['A']}`;
+  document.getElementById('annual-a').textContent = `Adelanto turno: ${counts['A']}`;
   document.getElementById('annual-v').textContent = `Vacaciones: ${counts['V']}`;
 
   document.getElementById('annual-fl').textContent = `Flexibilidad: ${counts['FL']}`;
@@ -245,7 +245,7 @@ function calculateAnnualSummary() {
   document.getElementById('annual-weekend-days').textContent = `Total días trabajados en fin de semana: ${totalWeekendDays} — ${annualWeekendEuros} €`;
 
   let total = Object.entries(counts).reduce((sum, [key, count]) => {
-    // Excluir B, LPF y PD (Plus D-Festivo) del total anual de días trabajados
+    // Excluir B, LPF y PD del total anual de días trabajados (PSD cuenta como día trabajado)
     return (key !== 'B' && key !== 'LPF' && key !== 'PD') ? sum + count : sum;
   }, 0);
   // Exclude annual festivos trabajados that fall on weekends from Annual Total
@@ -334,17 +334,18 @@ function renderCalendar() {
           <option value="M" ${savedTurno === 'M' ? 'selected' : ''}>Mañana</option>
           <option value="T" ${savedTurno === 'T' ? 'selected' : ''}>Tarde</option>
           <option value="N" ${savedTurno === 'N' ? 'selected' : ''}>Noche</option>
-          <option value="A" ${savedTurno === 'A' ? 'selected' : ''}>Adelanto</option>
+          <option value="A" ${savedTurno === 'A' ? 'selected' : ''}>Adelanto turno</option>
           <option value="V" ${savedTurno === 'V' ? 'selected' : ''}>Vacaciones</option>
           <option value="VAA" ${savedTurno === 'VAA' ? 'selected' : ''}>Vacaciones año anterior</option>
-          <option value="F" ${savedTurno === 'F' ? 'selected' : ''}>Festivo trabajado</option>
+          <option value="F" ${savedTurno === 'F' ? 'selected' : ''}>Plus festivo adicional</option>
           <option value="FL" ${savedTurno === 'FL' ? 'selected' : ''}>Flexibilidad</option>
           <option value="B" ${savedTurno === 'B' ? 'selected' : ''}>Baja</option>
-          <option value="PNR" ${savedTurno === 'PNR' ? 'selected' : ''}>Permiso no retribuido</option>
-          <option value="LPF" ${savedTurno === 'LPF' ? 'selected' : ''}>Libres por festivo</option>
+          <option value="PNR" ${savedTurno === 'PNR' ? 'selected' : ''}>Permiso retribuido</option>
+          <option value="LPF" ${savedTurno === 'LPF' ? 'selected' : ''}>Descanso por festivo</option>
           <option value="DF" ${savedTurno === 'DF' ? 'selected' : ''}>Descanso flexibilidad</option>
           <option value="HE" ${savedTurno === 'HE' ? 'selected' : ''}>Horas Extras</option>
           <option value="PD" ${savedTurno === 'PD' ? 'selected' : ''}>Plus D-Festivo</option>
+          <option value="PSD" ${savedTurno === 'PSD' ? 'selected' : ''}>Plus sab. y dom en reparación</option>
           <option value="JP" ${savedTurno === 'JP' ? 'selected' : ''}>Jornada Partida</option>
         </select>
       </div>
@@ -413,7 +414,11 @@ function renderCalendar() {
 
   // attach event listeners after rendering
   document.querySelectorAll('.turno-select').forEach(sel => {
-    sel.style.backgroundColor = getTurnoColor(localStorage.getItem(sel.dataset.fecha) || '');
+    const saved = localStorage.getItem(sel.dataset.fecha) || '';
+    // ensure the select element itself receives the matching turno-* class so its color can be styled
+    sel.className = 'turno-select';
+    if (saved) sel.classList.add(`turno-${saved.toLowerCase()}`);
+    sel.style.backgroundColor = getTurnoColor(saved);
     sel.addEventListener('change', (e) => {
       asignarTurno(e.target, sel.dataset.fecha);
     });
@@ -437,10 +442,46 @@ function storeHE(year, month, value) {
 function asignarTurno(select, fecha) {
   const turno = select.value;
   const dayContent = select.parentElement;
+
+  // determine previous turno stored for this date
+  const previousTurno = localStorage.getItem(fecha) || '';
+
+  // Update day content class
   dayContent.className = 'day-content';
   if (turno) dayContent.classList.add(`turno-${turno.toLowerCase()}`);
+  // ensure the select element itself reflects the selected turno class (so LPF becomes orange)
+  select.className = 'turno-select';
+  if (turno) select.classList.add(`turno-${turno.toLowerCase()}`);
   select.style.backgroundColor = getTurnoColor(turno);
+
+  // store new turno
   localStorage.setItem(fecha, turno);
+
+  // Adjust monthly Horas Extras: +1 if newly set to 'A', -1 if previously was 'A' and changed away
+  try {
+    const dateParts = fecha.split('-');
+    const year = Number(dateParts[0]);
+    const month = Number(dateParts[1]) - 1;
+    let currentHE = getStoredHE(year, month);
+
+    if (previousTurno !== 'A' && turno === 'A') {
+      currentHE = +(currentHE + 1).toFixed(1);
+      storeHE(year, month, currentHE);
+      // update UI value if present
+      const heValueEl = document.getElementById(`h-extras-value-${month}`);
+      if (heValueEl) heValueEl.textContent = currentHE.toFixed(1);
+    } else if (previousTurno === 'A' && turno !== 'A') {
+      // remove the 1 hour that was added when 'A' was selected
+      currentHE = +(Math.max(0, currentHE - 1)).toFixed(1);
+      storeHE(year, month, currentHE);
+      const heValueEl = document.getElementById(`h-extras-value-${month}`);
+      if (heValueEl) heValueEl.textContent = currentHE.toFixed(1);
+    }
+  } catch (err) {
+    // fail silently if parsing/storage errors occur
+    console.error('Error adjusting HE for Adelanto turno', err);
+  }
+
   updateSummary();
 }
 

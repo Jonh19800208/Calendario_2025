@@ -14,7 +14,7 @@
   --festivo-convenio: #F0E68C;
   --turno-b: #4682B4; 
   --turno-pnr: #FF1493; 
-  --turno-lpf: #40E0D0; 
+  --turno-lpf: #FFA500; /* orange for Descanso por festivo */
   --turno-vaa: #9370DB;
   --turno-df: #FF7F50; 
   --turno-he: #c7e7a1; 
@@ -205,7 +205,11 @@ body::before {
 .turno-select option[value="HE"] { background-color: var(--turno-he); color: white; }
 .turno-select option[value="JP"] { background-color: var(--turno-jp); }
 .turno-select option[value="PD"] { background-color: #FFD700; color: black; }
-.turno-pd { background-color: #FFD700; }
+.turno-pd { background-color: #FFD700; color: black; }
+
+/* Plus sab. y dom en reparación (PSD) - pink with black text */
+.turno-select option[value="PSD"] { background-color: #ff69b4; color: black; }
+.turno-psd { background-color: #ff69b4; color: black; }
 
 .turno-m { background-color: var(--turno-m); }
 .turno-t { background-color: var(--turno-t); }
